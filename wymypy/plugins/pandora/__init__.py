@@ -54,7 +54,7 @@ class WorkerThread(threading.Thread):
                                 song = self.pandora.get_next_song()
                             else:
                                 self.mpd.logger.exception(e)
-                        self.mpd.add([song['additionalAudioUrl']])
+                        self.mpd.add([str(song['additionalAudioUrl'])])
                 time.sleep(5)
             except Exception, e:
                 self.mpd.logger.exception(e)
