@@ -1,0 +1,8 @@
+[mpd]
+host = localhost
+port = 6600
+
+[server]
+tagformat = "<b>%(artist)s</b> - %(title)s"
+port = 8080
+
