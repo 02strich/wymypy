@@ -37,7 +37,7 @@ class LastFM(wPlugin):
             <button onclick='ajax_lastfm("")'>LastFM</button>
         """
 
-    def ajax_lastfm(self, t):
+    def ajax_lastfm(self, t, rsrnd=0):
 	yield "<h2>Last.fm</h2>"
 	# embedded LastFMProxy
 	yield """
@@ -68,7 +68,7 @@ class LastFM(wPlugin):
 
 
 
-    def ajax_fmadd(self,f):
+    def ajax_fmadd(self, f, rsrnd=0):
        	if f.startswith("http://www.lastfm.de/listen/"):
 		f=f.replace("http://www.lastfm.de/listen/", "")
 	if f.startswith("http://www.lastfm.de/"):
@@ -78,7 +78,7 @@ class LastFM(wPlugin):
 
         return "player" # tell to update player
 
-    def ajax_streamadd(self,f):
+    def ajax_streamadd(self, f, rsrnd=0):
     	self.mpd.add([f])
 	return "player"
 

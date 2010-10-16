@@ -508,7 +508,7 @@ def getUrlsForMpdSong(s):
 ###############################################################################
 class AjaxMethods:
 ###############################################################################
-    def ajax_player(self,isForced=0):
+    def ajax_player(self, isForced=0, rsrnd=0):
         global MPD
         yield "[[zonePlayer]]"
 
@@ -607,7 +607,7 @@ class AjaxMethods:
                 yield "</li>"
 
 
-    def ajax_ope(self,op,idx=None):
+    def ajax_ope(self, op, idx=None, rsrnd=0):
         if op=="play":
             if idx:
                 MPD.play(int(idx))
@@ -642,7 +642,7 @@ class AjaxMethods:
 
         return self.ajax_player()
 
-    def ajax_listen(self,file_enc):
+    def ajax_listen(self, file_enc, rsrnd=0):
         file = u64dec(file_enc)
         yield """[[zoneView]]"""
 

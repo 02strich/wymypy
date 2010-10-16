@@ -47,7 +47,7 @@ class Search(wPlugin):
             </form>
         """
 
-    def ajax_search(self,tq,q):
+    def ajax_search(self, tq, q, rsrnd=0):
         q=q.strip()
         yield "<h2>Search for '"
         yield q
@@ -68,7 +68,7 @@ class Search(wPlugin):
                 #~ yield go_library(p,p)
                 yield "</li>"
 
-    def ajax_add(self,f_enc):
+    def ajax_add(self, f_enc, rsrnd=0):
         f=u64dec(f_enc)
         self.mpd.add([f,])
 

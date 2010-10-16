@@ -39,7 +39,7 @@ class PlayLists(wPlugin):
             <button onclick='ajax_listePL()'>Playlists</button>
         """
 
-    def ajax_listePL(self):
+    def ajax_listePL(self, rsrnd=0):
         yield "<h2>Playlists</h2>"
         l=self.mpd.getPlaylistNames()
         for i in l:
@@ -49,7 +49,7 @@ class PlayLists(wPlugin):
             yield i.path
             yield "</li>"
 
-    def ajax_playPL(self,pl_enc):
+    def ajax_playPL(self, pl_enc, rsrnd=0):
         pl=u64dec(pl_enc)
         self.mpd.load(pl)
 

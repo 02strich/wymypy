@@ -40,7 +40,7 @@ class Library(wPlugin):
             <button onclick='ajax_library("")'>Library</button>
         """
 
-    def ajax_library(self,dir_enc):
+    def ajax_library(self, dir_enc, rsrnd=0):
         dir = u64dec(dir_enc)
 
         go_library = lambda link,aff : """<a href="#" onclick='ajax_library("%s")'>%s</a>""" % (u64enc(link),aff)
@@ -84,7 +84,7 @@ class Library(wPlugin):
             yield "</li>"
             c+=1
 
-    def ajax_ladd(self,f_enc):
+    def ajax_ladd(self, f_enc, rsrnd=0):
         f=u64dec(f_enc)
         self.mpd.add([f,])
 
