@@ -42,9 +42,7 @@ u64dec = base64.urlsafe_b64decode
 MPD = None
 CFG = None
 
-
-
-__version__="1.2"
+__version__="1.3"
 
 try:
     os.chdir(os.path.dirname(__file__))
