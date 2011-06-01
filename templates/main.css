@@ -1,0 +1,66 @@
+body {background:#222;}
+  * {font-size:13px;font-family: arial, helvetica, sans-serif;color:white }
+  input,select {background:#111;border:1px solid #666}
+  a {text-decoration:none;color:#AAF}
+  li {display:block;list-style-type: none;background:black;padding-top:1px;color:white}
+  li.p{background:#111}
+  li.s{background:#AA3;color:black}
+  li.s a {color:black}
+  li:hover {background:#555;color:black}
+  li:hover a {background:#555;color:#BBF}
+  button{background:#666;color:white;cursor:pointer;border:1px solid #666}
+  button:hover {background:#333}
+  span {background:#800;color:white;padding-left:2px;padding-right:2px;margin-left:1px;margin-right:2px}
+  form {display:inline;}
+  div#zonePlayer {
+    padding:2px;
+    position:absolute;
+    left:50%;
+    top:24px;
+    right:0px;
+    overflow:auto;
+    height:70px;
+    }
+  div#zoneListen {border:2px solid blue;visibility:hidden}
+
+  div#zonePlayList{
+    overflow:auto;
+    border:2px solid #222;
+    position:absolute;
+    top:100px;
+    bottom:25px;
+    left:50%;
+    right:0px;
+    background:#000;
+    padding:2px
+  }
+  div#zoneView{
+    overflow:auto;
+    border:1px solid black;
+    position:absolute;
+    top:24px;
+    bottom:0px;
+    left:0px;
+    right:50%;
+    background:#000;
+    }
+
+  div#zoneOpt{
+    position:absolute;
+    bottom:0px;
+    left:50%;
+    right:0px;
+    padding:2px;
+
+  }
+
+  div#zonePlugins{
+    position:absolute;
+    left:0;
+    right:0px;
+    top:0px;
+  }
+
+  /* seekbar */
+  a#sb{width:200px;height:16px;background:#888;display:block;text-align:left;border:1px solid red;cursor:pointer}
+  div#sbc{height:100%;background:#008}

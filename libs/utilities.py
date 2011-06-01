@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from unittest import UnitTest
 import cgi
 
 class InputProcessed(object):
@@ -26,22 +25,6 @@ def get_post_form(environ):
     environ['wsgi.input'] = new_input
     return fs
 
-
-@UnitTest.register
-def testExplodePath():
-    assert explodePath(None)==("","/")
-    assert explodePath("") == ("","/")
-    assert explodePath(" ") == ("","/")
-    assert explodePath("/") == ("","/")
-    assert explodePath("/kav") == ("","/kav")
-    assert explodePath("kav") == ("","/kav")
-    assert explodePath("/kav/") == ("kav","/")
-    assert explodePath("/kav/yurg") == ("kav","/yurg")
-    assert explodePath("/kav/yurg/") == ("kav","/yurg/")
-    assert explodePath("kav/yurg/") == ("kav","/yurg/")
-    assert explodePath("kav/yurg") == ("kav","/yurg")
-    #~ assert UnitTest.exception("""explodePath(12)""") == AssertionError
-
 def explodePath(path):
     """ return a tuple ( 1st_folder,following_path ) """
     if path==None: path="/"
@@ -55,8 +38,3 @@ def explodePath(path):
     else:
         tup = (p[1] ,path[len("/"+p[1]):])
     return tup
-
-
-
-if __name__ == "__main__":
-    pass
