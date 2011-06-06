@@ -59,9 +59,12 @@ def register_ajax(path,method):
 
 
 class WyMyPy:
+    def __init__(self, plugins_dict):
+        self.plugins = plugins_dict
+    
     def __call__(self,environ, start_response):
         path = environ["PATH_INFO"]
-
+        
         f,mpath = explodePath(path)
         if f == "":
             if mpath == "/dewplayer.swf":
@@ -69,11 +72,11 @@ class WyMyPy:
                 return open("libs/dewplayer.swf","rb")
             else:
                 start_response('200 OK', [('content-type', 'text/html')])
-                return mainpage()
+                return self.mainpage()
         elif f == "__ajax":
             start_response('200 OK', [('content-type', 'text/html')])
             args = [i.value for i in get_post_form(environ).list]
-            return makeajax(mpath, args)
+            return self.makeajax(mpath, args)
         elif f == "listen":   # plugin shouldn't named "listen" !
             name = u64dec(mpath[1:])
             start_response('200 OK', [('content-type', 'application/octet-stream'),
@@ -83,7 +86,7 @@ class WyMyPy:
             file=os.path.join("/var/lib/mpd/music",name)
             return open(file,"rb")
         else: # it should be a plugin now !
-            i = wPlugin.getInstance(f)
+            i = self.plugins[f.lower()]
             if i:
                 # it's a plugin "get"
                 # TODO : sometimes content-type should be image
@@ -92,101 +95,151 @@ class WyMyPy:
             else:
                 start_response('404 not found', [('content-type', 'text/html')])
                 return ("404 not found",)
-
-def mainpage():
-    yield """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-                <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" />
-                <html>
-                  <head>
-                    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-                    <meta http-equiv="content-language" content="en-US" />
-                    <meta name="language" content="en-US" />
-                    <meta name="description" content="Official website of the web-band manella">
-                    <title>wymypy</title>
-          """
-    #======================================================
-    # CSS
-    #======================================================
-    yield "<style type='text/css'>"
     
-    # main page css
-    input_file = open("templates/main.css", "r")
-    yield input_file.read()
-    input_file.close()
-    
-    # plugin css
-    for i in wPlugin.instances:
-        yield i.css
-    
-    yield "</style>"
-    
-    #======================================================
-    # AJAX JavaScript
-    #======================================================
-    yield "<script type='text/javascript'>"
-    am = AjaxMethods()
-    for i in dir(am):
-        if str(i).lower().startswith("ajax_"):
-            yield register_ajax("/__ajax/", i[5:])
-
-
-    for plugin in wPlugin.instances:
-        for i in dir(plugin):
+    def mainpage(self):
+        yield """<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+                    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" />
+                    <html>
+                      <head>
+                        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+                        <meta http-equiv="content-language" content="en-US" />
+                        <meta name="language" content="en-US" />
+                        <meta name="description" content="Official website of the web-band manella">
+                        <title>wymypy</title>
+              """
+        #======================================================
+        # CSS
+        #======================================================
+        yield "<style type='text/css'>"
+        
+        # main page css
+        input_file = open("templates/main.css", "r")
+        yield input_file.read()
+        input_file.close()
+        
+        # plugin css
+        for i in self.plugins.values():
+            yield i.css
+        
+        yield "</style>"
+        
+        #======================================================
+        # AJAX JavaScript
+        #======================================================
+        yield "<script type='text/javascript'>"
+        am = AjaxMethods()
+        for i in dir(am):
             if str(i).lower().startswith("ajax_"):
-                yield register_ajax("/__ajax/" + plugin.path + "/", i[5:])
+                yield register_ajax("/__ajax/", i[5:])
+        
+        
+        for plugin in self.plugins.values():
+            for i in dir(plugin):
+                if str(i).lower().startswith("ajax_"):
+                    yield register_ajax("/__ajax/" + plugin.path + "/", i[5:])
+        
+        #=======================================================
+        # normal JavaScript
+        #=======================================================
+        # main page js
+        input_file = open("templates/main.js", "r")
+        yield input_file.read()
+        input_file.close()
+        
+        # plugin js
+        for i in self.plugins.values():
+            yield i.js
+        yield "</script>"
+        
+        #=======================================================
+        # HTML
+        #=======================================================
+        yield """ </head>
+                  <body onload="init();">
+              """
+        
+        yield """<div id="zonePlugins">"""
+        for i in sorted(self.plugins.values(), key = lambda plugin: plugin.button_index):
+            yield i.show()
+        yield """</div>"""
+        
+        yield """<div id="zoneOpt">
+                   <b style='float:right'><a href='http://manatlan.infogami.com/wymypy'>wymypy</a> %s</b>
+                   <select id='timer' onchange="refresh();">
+                     <option value='1000'>refresh 1s</option>
+                     <option value='2000'>refresh 2s</option>
+                     <option value='5000' selected>refresh 5s</option>
+                     <option value='10000'>refresh 10s</option>
+                     <option value=''>refresh none</option>
+                   </select>
+                   <input type="checkbox" id='dispTags' onchange='changeDisplay(this);' />
+              </div>""" % __version__
+        yield """<div id="zoneListen"></div>"""
+        yield """<div id="zonePlayer"></div>"""
+        yield """<div id="zoneView">
+        <h1>Welcome</h1>
+        Welcome to wymypy ! From here you can pilot your Music Player Daemon!
+        <br><br>
+        <p>At the top, you have the "plugin bar" with provide the main operations in your library. Plugins will always be displayed in this zone.</p>
+        <p>At the right, you can control your player, and your playlist.</p>
+        <p>At the bottom right, you find the wymypy options now.</p>
+        <p>Other configurations take place in your <b>~/.wymypy</b> config file (in the future they will be editable thru a plugin)</p>
+        </div>"""
+        yield """<div id="zonePlayList"></div>"""
+        
+        yield """  </body>
+                </html>
+                """ % locals()
+    
+    def makeajax(self, method, args):
+        pmethod = method
 
-    #=======================================================
-    # normal JavaScript
-    #=======================================================
-    # main page js
-    input_file = open("templates/main.js", "r")
-    yield input_file.read()
-    input_file.close()
-    
-    # plugin js
-    for i in wPlugin.instances:
-        yield i.js
-    yield "</script>"
-    
-    #=======================================================
-    # HTML
-    #=======================================================
-    yield """ </head>
-              <body onload="init();">
-          """
-    
-    yield """<div id="zonePlugins">"""
-    for i in wPlugin.instances:
-        yield i.show()
-    yield """</div>"""
-    
-    yield """<div id="zoneOpt">
-               <b style='float:right'><a href='http://manatlan.infogami.com/wymypy'>wymypy</a> %s</b>
-               <select id='timer' onchange="refresh();">
-                 <option value='1000'>refresh 1s</option>
-                 <option value='2000'>refresh 2s</option>
-                 <option value='5000' selected>refresh 5s</option>
-                 <option value='10000'>refresh 10s</option>
-                 <option value=''>refresh none</option>
-               </select>
-               <input type="checkbox" id='dispTags' onchange='changeDisplay(this);' />
-          </div>""" % __version__
-    yield """<div id="zoneListen"></div>"""
-    yield """<div id="zonePlayer"></div>"""
-    yield """<div id="zoneView">
-    <h1>Welcome</h1>
-    Welcome to wymypy ! From here you can pilot your Music Player Daemon!
-    <br><br>
-    <p>At the top, you have the "plugin bar" with provide the main operations in your library. Plugins will always be displayed in this zone.</p>
-    <p>At the right, you can control your player, and your playlist.</p>
-    <p>At the bottom right, you find the wymypy options now.</p>
-    <p>Other configurations take place in your <b>~/.wymypy</b> config file (in the future they will be editable thru a plugin)</p>
-    </div>"""
-    yield """<div id="zonePlayList"></div>"""
-    
-    yield """  </body>
-            </html>
-            """ % locals()
+        # corrects args (undefined -> None)
+        largs = []
+        for i in args:
+          if i=="undefined":
+            largs.append(None)
+          else:
+            largs.append(i)
+        args=largs
+
+        if method.count("/")==2:
+            # plugin ("/Plugin/method")
+            t=method.split("/")
+            inst = self.plugins[t[1].lower()]
+            method = t[2]
+            isPlugin=True
+        else:
+            inst = AjaxMethods()
+            method = method[1:] # strip the first /
+            isPlugin=False
+
+        # la methode autoinstancié se nomme "ajax_*"
+        method = "ajax_"+method
+        if hasattr(inst,method):
+            fct=getattr(inst,method)
+            iter=fct(*(args),**({}))
+            if isPlugin:
+                if "'generator'" in str(type(iter)):
+                    def _iterInZoneView(iter):
+                        yield "[[zoneView]]"
+                        for i in iter:
+                            yield i
+                    iter = _iterInZoneView(iter)
+                else:
+                    if iter=="player":  #plugin ajax method returns "player" -> redraw player
+                        inst = AjaxMethods()
+                        iter = inst.ajax_player()
+                    else:
+                        yield """+ {"":""}"""
+                        return
+
+            dic=flux2dict( iter )
+            #~ print "AJAXCALL:",pmethod,args,"--->",dic.keys()
+            yield "+ "
+            yield jsonize(dic)
+        else:
+            yield "- methode non existante : ",pmethod
 
 def flux2dict( iter ):
     l={}
@@ -205,55 +258,7 @@ def flux2dict( iter ):
 def jsonize(dict):
     return "{"+",".join([""" "%s" : "%s" """ % (i,dict[i].replace('"','\\"').replace('\n','\\n')) for i in dict])+"}"
 
-def makeajax(method,args):
-    pmethod = method
-    
-    # corrects args (undefined -> None)
-    largs = []
-    for i in args:
-      if i=="undefined":
-        largs.append(None)
-      else:
-        largs.append(i)
-    args=largs
-    
-    if method.count("/")==2:
-        # plugin ("/Plugin/method")
-        t=method.split("/")
-        inst = wPlugin.getInstance(t[1])
-        method = t[2]
-        isPlugin=True
-    else:
-        inst = AjaxMethods()
-        method = method[1:] # strip the first /
-        isPlugin=False
-    
-    # la methode autoinstancié se nomme "ajax_*"
-    method = "ajax_"+method
-    if hasattr(inst,method):
-        fct=getattr(inst,method)
-        iter=fct(*(args),**({}))
-        if isPlugin:
-            if "'generator'" in str(type(iter)):
-                def _iterInZoneView(iter):
-                    yield "[[zoneView]]"
-                    for i in iter:
-                        yield i
-                iter = _iterInZoneView(iter)
-            else:
-                if iter=="player":  #plugin ajax method returns "player" -> redraw player
-                    inst = AjaxMethods()
-                    iter = inst.ajax_player()
-                else:
-                    yield """+ {"":""}"""
-                    return
-        
-        dic=flux2dict( iter )
-        #~ print "AJAXCALL:",pmethod,args,"--->",dic.keys()
-        yield "+ "
-        yield jsonize(dic)
-    else:
-        yield "- methode non existante : ",pmethod
+
 
 def getUrlsForMpdSong(s):
     if s.path.lower().startswith("http://"):
@@ -270,7 +275,7 @@ def getUrlsForMpdSong(s):
         title  = s.title.strip()
         album  = s.album.strip()
     
-    url={}
+    url = {}
     if artist:
         url["amg"]= """<a href="http://www.allmusic.com/cg/amg.dll?opt1=1&P=amg&sql=%s">amg</a> """ % (artist,)
         url["lastfm"]= """<a href="http://www.last.fm/music/%s">lfm</a> """%artist.replace(" ","+")
@@ -430,6 +435,7 @@ class AjaxMethods:
         </object>
         """ % locals()
     
+
 ###############################################################################
 def main():
     global MPD
@@ -439,23 +445,17 @@ def main():
         print "wymypy can't connect to your MPD : ",err
         sys.exit(-1)
     else:
-        #~ wPlugin.initInstances(MPD)
-        wPlugin.initInstances(MPD,"plugins")
-        app = WyMyPy()
-        
+        app = WyMyPy(wPlugin.get_instances(MPD))
         print "wymypy is listening on http://localhost:%s/" % (config.HTTP_PORT)
         print "(hit CTRL+C to quit)"
         try:
             wsgiserver.WSGIServer(('', config.HTTP_PORT), {'': app}).serve_forever()
-        except KeyboardInterrupt:
-            pass
         except socket.error:
             print "The port %s is already in use, perhaps wymypy is already running ?!" % config.HTTP_PORT
             sys.exit(-1)
         sys.exit(0)
 
-
-def run():
+if __name__=="__main__":
     USAGE = """USAGE : %s [option]
     Webserver frontend for MusicPlayerDaemon. Version """+__version__+"""
     Copyright 2007 by Marc Lentz under the GPL2 licence.
@@ -470,6 +470,3 @@ def run():
             sys.exit(-1)
     else:
         main()
-
-if __name__=="__main__":
-    run()

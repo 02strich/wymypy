@@ -19,38 +19,33 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-try:
-    import sys
-    sys.path.append("../..")
-    from plugins import wPlugin
-except:
-    pass
 
-
-
-import base64
+import sys, base64
 u64enc = base64.urlsafe_b64encode
 u64dec = base64.urlsafe_b64decode
 
 class PlayLists(wPlugin):
-
+    def init(self):
+        self.button_index = 2
+    
     def show(self):
         return """
             <button onclick='ajax_listePL()'>Playlists</button>
         """
-
-    def ajax_listePL(self, rsrnd=0):
+    
+    def ajax_listePL(self, rsrnd = 0):
         yield "<h2>Playlists</h2>"
-        l=self.mpd.getPlaylistNames()
+        l = self.mpd.getPlaylistNames()
         for i in l:
-            classe = l.index(i)%2==0 and " class='p'" or ''
+            classe = l.index(i) % 2 == 0 and " class='p'" or ''
             yield "<li%s>"%classe
             yield """<a href='#' onclick='ajax_playPL("%s");'><span>></span></a>""" % (u64enc(i.path),)
             yield i.path
             yield "</li>"
-
-    def ajax_playPL(self, pl_enc, rsrnd=0):
-        pl=u64dec(pl_enc)
+    
+    def ajax_playPL(self, pl_enc, rsrnd = 0):
+        pl = u64dec(pl_enc)
         self.mpd.load(pl)
-
+        
         return "player" # tell to update player
+
