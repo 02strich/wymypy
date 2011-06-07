@@ -20,10 +20,11 @@
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 
-import os, sys, base64
-
+import os
+import base64
 u64enc = base64.urlsafe_b64encode
 u64dec = base64.urlsafe_b64decode
+
 
 class Library(wPlugin):
     
@@ -38,18 +39,19 @@ class Library(wPlugin):
     def ajax_library(self, dir_enc, rsrnd=0):
         dir = u64dec(dir_enc)
         
-        go_library = lambda link, aff: """<a href="#" onclick='ajax_library("%s")'>%s</a>""" % (u64enc(link),aff)
-        go_add = lambda f: """<a href='#' onclick='ajax_ladd("%s");'>%s</a>""" % (u64enc(f),"<span>&gt;</span>")
+        go_library = lambda link, aff: """<a href="#" onclick='ajax_library("%s")'>%s</a>""" % (u64enc(link), aff)
+        go_add = lambda f: """<a href='#' onclick='ajax_ladd("%s");'>%s</a>""" % (u64enc(f), "<span>&gt;</span>")
         if dir != "":
             yield "<h2>"
             path = ""
-            yield go_library("","Library")
+            yield go_library("", "Library")
             for i in dir.split("/"):
                 yield " / "
-                if path != "": path += "/"
+                if path != "":
+                    path += "/"
                 path += i
                 if path != dir:
-                    yield go_library(path,i)
+                    yield go_library(path, i)
                 else:
                     yield i
             yield go_add(dir)
@@ -58,29 +60,27 @@ class Library(wPlugin):
             yield "<h2>Library</h2>"
         
         l = self.mpd.ls([dir], onlyDirs=True)
-        l.sort(cmp = lambda a,b: cmp(a.lower(), b.lower()))
+        l.sort(cmp=lambda a, b: cmp(a.lower(), b.lower()))
         c = 0
         for s in l:
-            classe = (c%2 == 0) and " class='p'" or ''
+            classe = (c % 2 == 0) and " class='p'" or ''
             yield "<li%s>" % classe
             yield go_library(s, os.path.basename(s))
             yield "</li>"
             c += 1
         
         l = self.mpd.ls([dir], onlyFiles=True)
-        l.sort(cmp = lambda a,b: cmp(a.lower(), b.lower()))
+        l.sort(cmp=lambda a, b: cmp(a.lower(), b.lower()))
         for s in l:
-            classe = (c%2 == 0) and " class='p'" or ''
+            classe = (c % 2 == 0) and " class='p'" or ''
             yield "<li%s>" % classe
             yield go_add(s)
             yield self.go_listen(s)
             yield os.path.basename(s)
             yield "</li>"
-            c+=1
+            c += 1
     
-    def ajax_ladd(self, f_enc, rsrnd = 0):
+    def ajax_ladd(self, f_enc, rsrnd=0):
         f = u64dec(f_enc)
-        self.mpd.add([f,])
-        return "player" # tell to update player
-
-
+        self.mpd.add([f, ])
+        return "player"  # tell to update player

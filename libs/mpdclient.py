@@ -18,7 +18,10 @@ To use:
 """
 
 #~ from __future__ import generators
-import os, socket, select, re
+import os
+import socket
+import select
+import re
 
 __release__ = "0.10.0"
 __version__ = "$Revision: 1.22 $"[11:-2]
@@ -62,13 +65,14 @@ RAISE_ERRORS = 20
 
 # the basics
 
-class MpdError(Exception):
-  "Base error class"
-  def __init__(self, msg, num="<none>"):
-    self._msg = msg
-    self._num = num
 
-    Exception.__init__(self, "Errno %s: %s" % (self._num, self._msg))
+class MpdError(Exception):
+    "Base error class"
+    def __init__(self, msg, num="<none>"):
+        self._msg = msg
+        self._num = num
+        Exception.__init__(self, "Errno %s: %s" % (self._num, self._msg))
+
 
 class MpdNetError(MpdError):
   "Base error class for network-related errors"
@@ -77,33 +81,39 @@ class MpdNetError(MpdError):
     self._port = port
     MpdError.__init__(self, msg % locals(), num)
 
-# and the specifics
 
+# and the specifics
 class MpdStoredError(MpdError):
   def __init__(self, msg):
     MpdError.__init__(self, msg, 50)
+
 
 class MpdTimeoutError(MpdError):
   def __init__(self):
     MpdError.__init__(self, "connection timeout", 10)
 
+
 class MpdSystemError(MpdError):
   def __init__(self):
     MpdError.__init__(self, "problems creating socket", 11)
 
+
 class MpdUnknownHostError(MpdNetError):
   def __init__(self, host):
     MpdNetError.__init__(self, "host `%(host)s' not found" % host, 11, host)
+
 
 class MpdConnectionPortError(MpdNetError):
   def __init__(self, host, port):
     MpdNetError.__init__(self,
       "problems connecting to `%(host)s' on port %(port)d", 12, host, port)
 
+
 class MpdNotMpdError(MpdNetError):
   def __init__(self, host, port,
                msg="port %(port)d on host `%(host)s' is not mpd"):
     MpdNetError.__init__(self, msg, 13, host, port)
+
 
 class MpdNoResponseError(MpdNetError):
   def __init__(self, host, port):
@@ -111,10 +121,12 @@ class MpdNoResponseError(MpdNetError):
       "problems getting a response from `%(host)s' on port %(port)d",
       14, host, port)
 
+
 class MpdSendingError(MpdError):
   def __init__(self, command):
     MpdError.__init__(self, "problems giving command `%s'" % command, 15)
     self._command = command
+
 
 class MpdConnectionClosedError(MpdError):
   def __init__(self):
@@ -122,14 +134,13 @@ class MpdConnectionClosedError(MpdError):
 
 
 ##### various classes, formerly C structs
-
 class Stats(object):
   "Represents statitistics grabbed from mpd via 'stats' command"
 
-  artists   = -1
-  albums    = -1
-  songs     = -1
-  uptime    = -1
+  artists = -1
+  albums = -1
+  songs = -1
+  uptime = -1
   db_update = -1
 
   def dbHasChanged(self, since):
@@ -145,15 +156,15 @@ class Stats(object):
 class Status(object):
   "Class representing the status of the player at a given point in time."
 
-  volume         = -10
-  repeat         = -1
-  random         = -1
+  volume = -10
+  repeat = -1
+  random = -1
   playlistLength = -1
-  playlist       = -1L
-  state          = -1
-  song           = 0
-  elapsedTime    = 0
-  totalTime      = 0
+  playlist = -1L
+  state = -1
+  song = 0
+  elapsedTime = 0
+  totalTime = 0
 
   def stateStr(self):
     "Returns string representation of state attribute."
@@ -200,7 +211,7 @@ class InfoEntity(object):
     passed to this constructor.
     """
     if not isinstance(path, str):
-      raise ValueError, "path must be string"
+      raise ValueError("path must be string")
 
     self.path = path
 
@@ -222,17 +233,16 @@ class PlaylistFile(InfoEntity):
 
 
 class Song(InfoEntity):
-
   """
   An InfoEntity subclass representing a music file somewhere inside of mpd's
   music directory.  Each Song instance will have a path attribute, but other
   attributes may remain as empty strings, since not all files will have the
   corresponding metadata (id3 tags, etc) needed to obtain the information.
   """
-  artist   = ""
-  title    = ""
-  album    = ""
-  track    = ""
+  artist = ""
+  title = ""
+  album = ""
+  track = ""
 
 
 def playerStateSwapType(state):
@@ -245,9 +255,10 @@ def playerStateSwapType(state):
     if state in _playerStates:
       return _playerStates[state]
     else:
-      raise ValueError, "state `%s' does not exist" % state
+      raise ValueError("state `%s' does not exist" % state)
   else:
-    raise ValueError, "state must be int or str"
+    raise ValueError("state must be int or str")
+
 
 def searchTableSwapType(state):
   """
@@ -258,41 +269,40 @@ def searchTableSwapType(state):
   if isinstance(state, int) or isinstance(state, str):
     return _searchTables[state]
   else:
-    raise ValueError, "state must be int or str"
+    raise ValueError("state must be int or str")
 
 ##### some convenient mappings, formerly C #defines
 
+# states that the player may be in
 _playerStates = {
-  # states that the player may be in
-  "unknown"  :  0,
-  "stop"     :  1,
-  "play"     :  2,
-  "pause"    :  3,
-   0 : "unknown",
-   1 : "stop",
-   2 : "play",
-   3 : "pause"
+  "unknown":  0,
+  "stop":     1,
+  "play":     2,
+  "pause":    3,
+   0: "unknown",
+   1: "stop",
+   2: "play",
+   3: "pause"
 }
 
 _searchTables = {
   # types of things you can search for
-  "artist"   : 0,
-  "album"    : 1,
-  "title"    : 2,
-  "filename" : 3,
-  0 : "artist",
-  1 : "album",
-  2 : "title",
-  3 : "filename"
+  "artist":   0,
+  "album":    1,
+  "title":    2,
+  "filename": 3,
+  0: "artist",
+  1: "album",
+  2: "title",
+  3: "filename"
 }
 
 
-
 ##### and some random utilitarian functions
-
 def _sanitizeArg(arg):
   "Escapes backslashes and doublequotes and returns the escaped string."
   return arg.replace("\\", "\\\\").replace('"', '\\"')
+
 
 def _versionOk(ver):
   """
@@ -382,16 +392,30 @@ class MpdConnection(object):
     self.executeCommand("command_list_begin")
     self.commandList = True
 
-  def sendShuffleCommand(self): self.executeCommand("shuffle")
-  def sendClearCommand(self):   self.executeCommand("clear")
-  def sendStopCommand(self):    self.executeCommand("stop")
-  def sendPauseCommand(self):   self.executeCommand("pause")
-  def sendNextCommand(self):    self.executeCommand("next")
-  def sendUpdateCommand(self):  self.executeCommand("update")
-  def sendPrevCommand(self):    self.executeCommand("previous")
+  def sendShuffleCommand(self):
+    self.executeCommand("shuffle")
+
+  def sendClearCommand(self):
+    self.executeCommand("clear")
+
+  def sendStopCommand(self):
+    self.executeCommand("stop")
+
+  def sendPauseCommand(self):
+    self.executeCommand("pause")
+
+  def sendNextCommand(self):
+    self.executeCommand("next")
+
+  def sendUpdateCommand(self):
+    self.executeCommand("update")
+
+  def sendPrevCommand(self):
+    self.executeCommand("previous")
 
   def sendSeekCommand(self, songNum, absSecs):
-    if self.DEBUG: print "songNum is %d, moving to %d" % (songNum, absSecs)
+    if self.DEBUG:
+      print "songNum is %d, moving to %d" % (songNum, absSecs)
     self.executeCommand('seek "%d" "%d"' % (songNum, absSecs))
 
   def sendVolumeCommand(self, newVolume):
@@ -490,7 +514,6 @@ class MpdConnection(object):
 
       self.getNextReturnElement()
 
-
   def iterInfoEntities(self):
     """
     Specific to the Python libmpdclient.  Returns an iterator over the info
@@ -555,7 +578,7 @@ class MpdConnection(object):
 
     if mode == "r":
       r = [self.sock]
-    else: #mode == "w"
+    else:  # mode == "w"
       w = [self.sock]
 
     if select.select(r, w, [], self.timeout) == ([], [], []):
@@ -607,8 +630,13 @@ class MpdConnection(object):
 
       self.getNextReturnElement()
 
-    tocheck = { "volume" : -9, "repeat" : 0, "random" : 0,
-                "playlist" : 0, "playlistLength" : 0, "state": 0 }
+    tocheck = {
+      "volume": -9,
+      "repeat": 0,
+      "random": 0,
+      "playlist": 0,
+      "playlistLength": 0,
+      "state": 0}
 
     for attr, lowerbound in tocheck.items():
       if getattr(status, attr) < lowerbound:
@@ -652,7 +680,8 @@ class MpdConnection(object):
     return stats
 
   def finishCommand(self):
-    if self.DEBUG: print "running finishCommand()"
+    if self.DEBUG:
+      print "running finishCommand()"
     try:
       while not self.doneProcessing:
         self.getNextReturnElement()
@@ -661,8 +690,6 @@ class MpdConnection(object):
       self.returnElement = None
       self.doneProcessing = True
       raise err
-
-
 
   def executeCommand(self, command):
 
@@ -674,7 +701,8 @@ class MpdConnection(object):
     self._doSelect("w")
 
     try:
-      if self.DEBUG: print "SENDING:", command,
+      if self.DEBUG:
+        print "SENDING:", command,
       self.sock.send(command)
     except socket.error:
       raise MpdSendingError(command)
@@ -780,7 +808,6 @@ class MpdController(MpdConnection):
 
     MpdConnection.__init__(self, host, port, *args)
 
-
   def status(self):
     return self.getStatus()
 
@@ -844,9 +871,9 @@ class MpdController(MpdConnection):
     "Check if *args are all non-negative integers, raise ValueError otherwise."
     for num in nums:
       if not isinstance(num, int):
-        raise ValueError, "`%s' not an int" % num
+        raise ValueError("`%s' not an int" % num)
       elif num < 0:
-        raise ValueError, "`%s' not a positive integer" % num
+        raise ValueError("`%s' not a positive integer" % num)
 
   def seek(self, percent=None, seconds=None):
     """
@@ -858,7 +885,7 @@ class MpdController(MpdConnection):
       percent = int(percent)
       self._checkInts(percent)
       songlen = self.getSongPosition()[1]
-      newSecs = int( (float(percent)/100) * songlen )
+      newSecs = int((float(percent) / 100) * songlen)
 
     elif seconds != None:
       seconds = int(seconds)
@@ -871,7 +898,6 @@ class MpdController(MpdConnection):
       self.sendSeekCommand(song, newSecs)
     finally:
       self.finishCommand()
-
 
   def volume(self, vol):
     """
@@ -923,7 +949,7 @@ class MpdController(MpdConnection):
 
     for name in filenames:
         if not isinstance(name, str):
-            raise ValueError, "all names must be strings"
+            raise ValueError("all names must be strings")
 
     tmp = []
     # filter streams
@@ -931,7 +957,7 @@ class MpdController(MpdConnection):
         if name.startswith("http://"):
             tmp.append(name)
             filenames.remove(name)
-               
+
     # ---> needs to much performance
     # get files in music dir
     #try:
@@ -940,7 +966,7 @@ class MpdController(MpdConnection):
     #finally:
     #    self.finishCommand()
 
-    # only keep the filenames that exist in the music dir 
+    # only keep the filenames that exist in the music dir
     #for songpath in songpaths:
     #    for filename in filenames:
     #        if songpath.startswith(filename):
@@ -949,8 +975,8 @@ class MpdController(MpdConnection):
 
     # intermediate solution
     for name in filenames:
-        tmp.append(name);
-        filenames.remove(name);
+        tmp.append(name)
+        filenames.remove(name)
 
     filenames = tmp
 
@@ -962,7 +988,6 @@ class MpdController(MpdConnection):
         self.sendCommandListEnd()
 
     return filenames
-
 
   def load(self, *names):
     """
@@ -976,13 +1001,12 @@ class MpdController(MpdConnection):
     try:
       for name in names:
         if not isinstance(name, str):
-          raise ValueError, "all names must be strings"
+          raise ValueError("all names must be strings")
 
       map(self.sendLoadCommand, names)
 
     finally:
       self.sendCommandListEnd()
-
 
   def rm(self, name):
     """
@@ -992,7 +1016,7 @@ class MpdController(MpdConnection):
     """
 
     if not isinstance(name, str):
-      raise ValueError, "name must be string"
+      raise ValueError("name must be string")
 
     try:
       self.sendRmCommand(name)
@@ -1007,7 +1031,7 @@ class MpdController(MpdConnection):
     """
 
     if not isinstance(name, str):
-      raise ValueError, "name must be string"
+      raise ValueError("name must be string")
 
     try:
       self.sendSaveCommand(name)
@@ -1048,12 +1072,12 @@ class MpdController(MpdConnection):
 
       elif isinstance(thing, list) or isinstance(thing, tuple):
         if len(thing) != 2:
-          raise ValueError, "ranges must be pairs"
+          raise ValueError("ranges must be pairs")
 
         self._checkInts(*thing)
-        todelete.extend(range(thing[0], thing[1]+1))
+        todelete.extend(range(thing[0], thing[1] + 1))
       else:
-        raise ValueError, "nums must be ints or pairs in lists/tuples"
+        raise ValueError("nums must be ints or pairs in lists/tuples")
 
     # send all of the delete commands
 
@@ -1104,7 +1128,7 @@ class MpdController(MpdConnection):
     for adir in dirs:
 
       if not isinstance(adir, str):
-        raise ValueError, "all arguments must be strings"
+        raise ValueError("all arguments must be strings")
 
       self.sendListallCommand(adir)
 
@@ -1118,7 +1142,7 @@ class MpdController(MpdConnection):
 
   def search(self, table, *words):
     """
-    search(table, *words) -> list of paths of matching music files / directories
+    search(table, *words) -> list of paths of matching music files/directories
 
     table should be any of album|artist|title|filename, and words should be
     search phrases to search for in the given table.  Any music files or
@@ -1133,10 +1157,10 @@ class MpdController(MpdConnection):
     """
 
     if not isinstance(table, str) or table not in _searchTables:
-      raise ValueError, "table must be album|artist|title|filename"
+      raise ValueError("table must be album|artist|title|filename")
 
     if not words:
-      raise ValueError, "no search terms given"
+      raise ValueError("no search terms given")
 
     table = searchTableSwapType(table)
 
@@ -1145,7 +1169,7 @@ class MpdController(MpdConnection):
     for word in words:
 
       if not isinstance(word, str):
-        raise ValueError, "all words must be strings"
+        raise ValueError("all words must be strings")
 
       try:
         self.sendSearchCommand(table, word)
@@ -1180,7 +1204,7 @@ class MpdController(MpdConnection):
     for adir in dirs:
 
       if not isinstance(adir, str):
-        raise ValueError, "all arguments must be strings"
+        raise ValueError("all arguments must be strings")
 
       try:
         self.sendLsInfoCommand(adir)
@@ -1209,7 +1233,7 @@ class MpdController(MpdConnection):
     """
 
     if not isinstance(attr, str):
-      raise ValueError, "attr must be string"
+      raise ValueError("attr must be string")
 
     all = []
 
@@ -1242,8 +1266,8 @@ class MpdController(MpdConnection):
     if status.stateStr() == "stop":
       return False
 
-    if status.totalTime>0:
-      percent = 100.0*status.elapsedTime/status.totalTime
+    if status.totalTime > 0:
+      percent = 100.0 * status.elapsedTime / status.totalTime
     else:
       percent = 0
 
@@ -1261,7 +1285,7 @@ class MpdController(MpdConnection):
     if status.stateStr() == "stop":
       return (0, status.playlistLength)
 
-    return (status.song+1, status.playlistLength)
+    return (status.song + 1, status.playlistLength)
 
   def getPlaylistNames(self):
     """

@@ -34,27 +34,27 @@ from urllib import urlencode
 import config
 from libs.mpdsafe import MpdSafe
 from libs import wsgiserver
-from libs.utilities import get_post_form,explodePath
+from libs.utilities import get_post_form, explodePath
 import base64
 u64enc = base64.urlsafe_b64encode
 u64dec = base64.urlsafe_b64decode
 
 MPD = None
 
-__version__="1.3"
+__version__ = "1.3"
 
 try:
     os.chdir(os.path.dirname(__file__))
 except:
     pass
 
-from plugins import wPlugin # import in __builtins__ !!!
+from plugins import wPlugin  # import in __builtins__ !!!
 
 
-def register_ajax(path,method):
+def register_ajax(path, method):
     return """
     function ajax_%(method)s()
-    { sajax_do_call("%(path)s%(method)s",ajax_%(method)s.arguments);}
+    { sajax_do_call("%(path)s%(method)s", ajax_%(method)s.arguments);}
     """ % locals()
 
 
@@ -62,14 +62,14 @@ class WyMyPy:
     def __init__(self, plugins_dict):
         self.plugins = plugins_dict
     
-    def __call__(self,environ, start_response):
+    def __call__(self, environ, start_response):
         path = environ["PATH_INFO"]
         
-        f,mpath = explodePath(path)
+        f, mpath = explodePath(path)
         if f == "":
             if mpath == "/dewplayer.swf":
                 start_response('200 OK', [('content-type', 'application/x-shockwave-flash')])
-                return open("libs/dewplayer.swf","rb")
+                return open("libs/dewplayer.swf", "rb")
             else:
                 start_response('200 OK', [('content-type', 'text/html')])
                 return self.mainpage()
@@ -80,12 +80,11 @@ class WyMyPy:
         elif f == "listen":   # plugin shouldn't named "listen" !
             name = u64dec(mpath[1:])
             start_response('200 OK', [('content-type', 'application/octet-stream'),
-                    ("Content-Disposition","""attachment; filename="%s";"""%name)
+                    ("Content-Disposition", """attachment; filename="%s"; """ % name)
                 ])
-            #file=os.path.join("/media/data/mp3",name)
-            file=os.path.join("/var/lib/mpd/music",name)
-            return open(file,"rb")
-        else: # it should be a plugin now !
+            file = os.path.join("/var/lib/mpd/music", name)
+            return open(file, "rb")
+        else:  # it should be a plugin now !
             i = self.plugins[f.lower()]
             if i:
                 # it's a plugin "get"
@@ -132,7 +131,6 @@ class WyMyPy:
             if str(i).lower().startswith("ajax_"):
                 yield register_ajax("/__ajax/", i[5:])
         
-        
         for plugin in self.plugins.values():
             for i in dir(plugin):
                 if str(i).lower().startswith("ajax_"):
@@ -159,7 +157,7 @@ class WyMyPy:
               """
         
         yield """<div id="zonePlugins">"""
-        for i in sorted(self.plugins.values(), key = lambda plugin: plugin.button_index):
+        for i in sorted(self.plugins.values(), key=lambda plugin: plugin.button_index):
             yield i.show()
         yield """</div>"""
         
@@ -197,28 +195,28 @@ class WyMyPy:
         # corrects args (undefined -> None)
         largs = []
         for i in args:
-          if i=="undefined":
-            largs.append(None)
-          else:
-            largs.append(i)
-        args=largs
+            if i == "undefined":
+                largs.append(None)
+            else:
+                largs.append(i)
+        args = largs
 
-        if method.count("/")==2:
+        if method.count("/") == 2:
             # plugin ("/Plugin/method")
-            t=method.split("/")
+            t = method.split("/")
             inst = self.plugins[t[1].lower()]
             method = t[2]
-            isPlugin=True
+            isPlugin = True
         else:
             inst = AjaxMethods()
-            method = method[1:] # strip the first /
-            isPlugin=False
+            method = method[1:]  # strip the first /
+            isPlugin = False
 
         # la methode autoinstancié se nomme "ajax_*"
-        method = "ajax_"+method
-        if hasattr(inst,method):
-            fct=getattr(inst,method)
-            iter=fct(*(args),**({}))
+        method = "ajax_" + method
+        if hasattr(inst, method):
+            fct = getattr(inst, method)
+            iter = fct(*(args), **({}))
             if isPlugin:
                 if "'generator'" in str(type(iter)):
                     def _iterInZoneView(iter):
@@ -227,37 +225,38 @@ class WyMyPy:
                             yield i
                     iter = _iterInZoneView(iter)
                 else:
-                    if iter=="player":  #plugin ajax method returns "player" -> redraw player
+                    if iter == "player":  # plugin ajax method returns "player" -> redraw player
                         inst = AjaxMethods()
                         iter = inst.ajax_player()
                     else:
                         yield """+ {"":""}"""
                         return
 
-            dic=flux2dict( iter )
+            dic = flux2dict(iter)
             #~ print "AJAXCALL:",pmethod,args,"--->",dic.keys()
             yield "+ "
             yield jsonize(dic)
         else:
-            yield "- methode non existante : ",pmethod
+            yield "- methode non existante : ", pmethod
 
-def flux2dict( iter ):
-    l={}
-    key=None
+
+def flux2dict(iter):
+    l = {}
+    key = None
     for i in iter:
-      if i[:2]=="[[" and i[-2:]=="]]":
-        key=i[2:-2]
-        l[key]=""
-      else:
-        if key==None:
-          raise "key error"
+        if i[:2] == "[[" and i[-2:] == "]]":
+            key = i[2:-2]
+            l[key] = ""
         else:
-          l[key]+=i
+            if key == None:
+                raise "key error"
+            else:
+                l[key] += i
     return l
 
-def jsonize(dict):
-    return "{"+",".join([""" "%s" : "%s" """ % (i,dict[i].replace('"','\\"').replace('\n','\\n')) for i in dict])+"}"
 
+def jsonize(dict):
+    return "{" + ",".join([""" "%s" : "%s" """ % (i, dict[i].replace('"', '\\"').replace('\n', '\\n')) for i in dict]) + "}"
 
 
 def getUrlsForMpdSong(s):
@@ -266,26 +265,27 @@ def getUrlsForMpdSong(s):
         if "-" in s.title:
             l = s.title.split("-")
             artist = l[0].strip()
-            title  = l[1].strip()
-            album  = ""
+            title = l[1].strip()
+            album = ""
         else:
-            return  {}
+            return {}
     else:
         artist = s.artist.strip()
-        title  = s.title.strip()
-        album  = s.album.strip()
+        title = s.title.strip()
+        album = s.album.strip()
     
     url = {}
     if artist:
-        url["amg"]= """<a href="http://www.allmusic.com/cg/amg.dll?opt1=1&P=amg&sql=%s">amg</a> """ % (artist,)
-        url["lastfm"]= """<a href="http://www.last.fm/music/%s">lfm</a> """%artist.replace(" ","+")
+        url["amg"] = """<a href="http://www.allmusic.com/cg/amg.dll?opt1=1&P=amg&sql=%s">amg</a> """ % (artist,)
+        url["lastfm"] = """<a href="http://www.last.fm/music/%s">lfm</a> """ % artist.replace(" ", "+")
         
         if title:
-            url["lyrc"]="""<a href="http://lyrc.com.ar/en/tema1en.php?%s">lyrics</a> """%urlencode({'artist': artist, 'songname': title})
+            url["lyrc"] = """<a href="http://lyrc.com.ar/en/tema1en.php?%s">lyrics</a> """ % urlencode({'artist': artist, 'songname': title})
             #~ url["findlyrics"]="""<a href="http://www.findlyrics.com/%s/%s/">l2</a> """%(artist.replace(" ","_"),title.replace(" ","_"))
             #~ url["lyriki"]="""<a href="http://www.lyriki.com/%s:%s">l3</a> """%(artist.replace(" ","_"),title.replace(" ","_"))
     
     return url
+
 
 ###############################################################################
 class AjaxMethods:
@@ -293,17 +293,18 @@ class AjaxMethods:
         global MPD
         yield "[[zonePlayer]]"
         
-        stat=MPD.status()
+        stat = MPD.status()
         #~ for i in  ['elapsedTime', 'playlist', 'playlistLength', 'random', 'repeat', 'song', 'state', 'stateStr', 'totalTime', 'volume']:
           #~ print i, getattr(stat,i)
         
         if not stat:
             MPD.stop()
             yield "Error : Can't play that!"
+            
             class stat:
-                state=0
+                state = 0
         else:
-            if stat.state in (2,3): # in play/pause
+            if stat.state in (2, 3):  # in play/pause
                 # aff title
                 s = MPD.getCurrentSong()
                 if s.path.lower().startswith("http://"):
@@ -318,8 +319,8 @@ class AjaxMethods:
                 urls = " ".join([d[i] for i in sorted(d.keys())])
                 
                 # aff position
-                ds = lambda t: "%02d:%02d" % (t/60,t%60)
-                s,t,p = MPD.getSongPosition()
+                ds = lambda t: "%02d:%02d" % (t / 60, t % 60)
+                s, t, p = MPD.getSongPosition()
                 yield """
                   <table>
                     <tr>
@@ -332,22 +333,22 @@ class AjaxMethods:
                         %d %% - %s/%s - %s
                       </td>
                     </tr>
-                  </table>""" % (int(p*2),int(p),ds(s),ds(t),urls)
+                  </table>""" % (int(p * 2), int(p), ds(s), ds(t), urls)
         
         yield """
         <button onclick='do_operation("prev");'><<</button>
         """
-        if stat.state!=2:
+        if stat.state != 2:
             yield """ <button onclick='do_operation("play");'>></button>"""
         else:
             yield """ <button onclick='do_operation("pause");'>||</button>"""
-        if stat.state!=1:
+        if stat.state != 1:
             yield """ <button onclick='do_operation("stop");'>[]</button>"""
         yield """
         <button onclick='do_operation("next");'>>></button>
         """
         
-        if stat.state!=0:
+        if stat.state != 0:
             yield """
             <button onclick='do_operation("voldown");'>-</button>
             <button onclick='do_operation("volup");'>+</button>
@@ -356,7 +357,7 @@ class AjaxMethods:
             yield "%"
         
         if isForced or MPD.needRedrawPlaylist():
-            idx,tot = MPD.getPlaylistPosition()
+            idx, tot = MPD.getPlaylistPosition()
             yield "[[zonePlayList]]"
             yield """
             <h2>Playlist (%d)
@@ -367,64 +368,64 @@ class AjaxMethods:
             
             l = MPD.playlist()
             for s in l:
-                i=l.index(s)
+                i = l.index(s)
                 
-                if i+1 == idx:
+                if i + 1 == idx:
                     classe = " class='s'"
                 else:
-                    classe = i%2==0 and " class='p'" or ''
+                    classe = i % 2 == 0 and " class='p'" or ''
                 
                 if s.path.lower().startswith("http://"):
                     title = s.path
                 else:
-                    title = MPD.display(s,CFG.server.tagformat)
+                    title = MPD.display(s, config.TAG_FORMAT)
                 
-                yield "<li%s>"%classe
-                yield "%03d" % (i+1)
-                yield """<a href='#' onclick="do_operation('delete','"""+str(i)+"""');"><span>X</span></a>"""
-                yield """<a href='#' onclick="do_operation('play','"""+str(i)+"""');">"""+title+"""</a>"""
+                yield "<li%s>" % classe
+                yield "%03d" % (i + 1)
+                yield """<a href='#' onclick="do_operation('delete','""" + str(i) + """');"><span>X</span></a>"""
+                yield """<a href='#' onclick="do_operation('play','""" + str(i) + """');">""" + title + """</a>"""
                 yield "</li>"
     
     def ajax_ope(self, op, idx=None, rsrnd=0):
-        if op=="play":
+        if op == "play":
             if idx:
                 MPD.play(int(idx))
             else:
                 MPD.play()
-        elif op=="delete":
-            MPD.delete([int(idx),])
-        elif op=="next":
+        elif op == "delete":
+            MPD.delete([int(idx), ])
+        elif op == "next":
             MPD.next()
-        elif op=="prev":
+        elif op == "prev":
             MPD.prev()
-        elif op=="play":
+        elif op == "play":
             MPD.play()
-        elif op=="pause":
+        elif op == "pause":
             MPD.pause()
-        elif op=="stop":
+        elif op == "stop":
             MPD.stop()
-        elif op=="clear":
+        elif op == "clear":
             MPD.clear()
-        elif op=="shuffle":
+        elif op == "shuffle":
             MPD.shuffleIt()
-        elif op=="seek":
+        elif op == "seek":
             MPD.seek(percent=int(idx))
-        elif op=="volup":
+        elif op == "volup":
             MPD.volumeUp()
-        elif op=="voldown":
+        elif op == "voldown":
             MPD.volumeDown()
-        elif op=="changeDisplay":
+        elif op == "changeDisplay":
             MPD.changeDisplay(int(idx))
         else:
-            raise "ERROR:"+op+","+str(idx)
+            raise "ERROR:" + op + "," + str(idx)
         return self.ajax_player()
     
     def ajax_listen(self, file_enc, rsrnd=0):
         file = u64dec(file_enc)
         yield """[[zoneView]]"""
         
-        url="listen/%s" % file_enc
-        yield """<a href="%s">%s</a> """ % (url,file)
+        url = "listen/%s" % file_enc
+        yield """<a href="%s">%s</a> """ % (url, file)
         
         yield """
         <object type="application/x-shockwave-flash"
@@ -434,15 +435,15 @@ class AjaxMethods:
         <param name="movie" value="dewplayer.swf?son=%(url)s&amp;autoplay=1&amp;bgcolor=FFFFFF">
         </object>
         """ % locals()
-    
+
 
 ###############################################################################
 def main():
     global MPD
-    MPD = MpdSafe(config.MPD_HOST,config.MPD_PORT)
+    MPD = MpdSafe(config.MPD_HOST, config.MPD_PORT)
     err = MPD.connect()
     if err:
-        print "wymypy can't connect to your MPD : ",err
+        print "wymypy can't connect to your MPD : ", err
         sys.exit(-1)
     else:
         app = WyMyPy(wPlugin.get_instances(MPD))
@@ -455,9 +456,9 @@ def main():
             sys.exit(-1)
         sys.exit(0)
 
-if __name__=="__main__":
+if __name__ == "__main__":
     USAGE = """USAGE : %s [option]
-    Webserver frontend for MusicPlayerDaemon. Version """+__version__+"""
+    Webserver frontend for MusicPlayerDaemon. Version """ + __version__ + """
     Copyright 2007 by Marc Lentz under the GPL2 licence.
     Options:
         -h        : this help"""

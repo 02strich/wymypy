@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 import cgi
 
+
 class InputProcessed(object):
     def read(self, *args):
         raise EOFError('The wsgi.input stream has already been consumed')
     readline = readlines = __iter__ = read
+
 
 def get_post_form(environ):
     #~ assert is_post_request(environ)
@@ -25,16 +27,17 @@ def get_post_form(environ):
     environ['wsgi.input'] = new_input
     return fs
 
+
 def explodePath(path):
     """ return a tuple ( 1st_folder,following_path ) """
-    if path==None: path="/"
+    if path == None: path = "/"
     assert isinstance(path, basestring)
     path = path.strip()
-    if path=="" or path[0]!="/": path="/"+path
+    if path == "" or path[0] != "/": path = "/" + path
 
-    p=path.split("/")
-    if path.count("/")==1:
-        tup = ("",path)
+    p = path.split("/")
+    if path.count("/") == 1:
+        tup = ("", path)
     else:
-        tup = (p[1] ,path[len("/"+p[1]):])
+        tup = (p[1], path[len("/" + p[1]):])
     return tup

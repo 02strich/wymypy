@@ -27,14 +27,15 @@ from couchdbkit import *
 
 import config
 
+
 class Greeting(Document):
     url = StringProperty()
+
 
 class IRadio(wPlugin):
     def init(self):
         self.button_index = 50
-        
-        self.server = Server(uri = config.COUCHDB_URL)
+        self.server = Server(uri=config.COUCHDB_URL)
         self.db = self.server.get_or_create_db("mpd_radio")
     
     def show(self):
@@ -42,7 +43,7 @@ class IRadio(wPlugin):
             <button onclick='ajax_radio()'>Radio</button>
         """
     
-    def ajax_radio(self, ignore = 0, rsrnd = 0):
+    def ajax_radio(self, ignore=0, rsrnd=0):
         yield "<h2>Internet Radio</h2>"
         
         # list stations
@@ -65,16 +66,14 @@ class IRadio(wPlugin):
           </form>
         """
     
-    def ajax_streamPlay(self, url, rsrnd = 0):
+    def ajax_streamPlay(self, url, rsrnd=0):
         f = u64dec(url)
         print f
         self.mpd.add([f])
         return "player"
     
-    def ajax_streamAdd(self, f, rsrnd = 0):
+    def ajax_streamAdd(self, f, rsrnd=0):
         self.db.save_doc({'url': f})
         for ele in self.ajax_radio():
             yield ele
         #return "player"
-    
-
