@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US" />
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<meta http-equiv="content-language" content="en-US" />
+		<meta name="language" content="en-US" />
+		<meta name="description" content="Official website of the web-band manella">
+		<title>wymypy</title>
+		<!-- ======================================================
+			CSS
+		====================================================== -->
+		<link rel="stylesheet" type="text/css" href="static/main.css" />
+		<link rel="stylesheet" type="text/css" href="plugins.css" />
+		
+		<!-- ======================================================
+			JavaScript
+		====================================================== -->
+		<script type="text/javascript" src="static/main.js"></script>
+		<script type="text/javascript" src="plugins.js"></script>
+	</head>
+	
+	<!-- =======================================================
+		HTML Body
+	======================================================= -->
+	<body onload="init();">
+		<div id="zonePlugins">
+			{% for plugin in plugins %}
+				{{ plugin.show()|safe }}
+			{% endfor %}
+		</div>
+		
+		<div id="zoneOpt">
+			<b style='float:right'><a href='http://manatlan.infogami.com/wymypy'>wymypy</a>{{ version }}</b>
+			<select id='timer' onchange="refresh();">
+				<option value='1000'>refresh 1s</option>
+				<option value='2000'>refresh 2s</option>
+				<option value='5000' selected>refresh 5s</option>
+				<option value='10000'>refresh 10s</option>
+				<option value=''>refresh none</option>
+			</select>
+			<input type="checkbox" id='dispTags' onchange='changeDisplay(this);' />
+		</div>
+		
+		<div id="zoneListen"></div>
+		<div id="zonePlayer"></div>
+		<div id="zoneView">
+			<h1>Welcome</h1>
+			Welcome to wymypy ! From here you can pilot your Music Player Daemon!<br><br>
+			<p>At the top, you have the "plugin bar" with provide the main operations in your library. Plugins will always be displayed in this zone.</p>
+			<p>At the right, you can control your player, and your playlist.</p>
+			<p>At the bottom right, you find the wymypy options now.</p>
+			<p>Other configurations take place in your <b>~/.wymypy</b> config file (in the future they will be editable thru a plugin)</p>
+		</div>
+		<div id="zonePlayList"></div>
+	</body>
+</html>

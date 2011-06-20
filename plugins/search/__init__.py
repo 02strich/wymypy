@@ -42,7 +42,7 @@ class Search(wPlugin):
             </form>
         """
     
-    def ajax_search(self, tq, q, rsrnd=0):
+    def ajax_search(self, tq, q):
         q = q.strip()
         yield "<h2>Search for '"
         yield q
@@ -56,15 +56,13 @@ class Search(wPlugin):
                 f = os.path.basename(i)
                 classe = l.index(i) % 2 == 0 and " class='p'" or ''
                 yield "<li%s>" % classe
-                yield """<a href='#' onclick='ajax_add("%s");'>%s</a>""" % (u64enc(i), "<span>></span>")
+                yield """<a href='#' onclick='ajax_add("%s");'>%s</a>""" % (i, "<span>></span>")
                 yield self.go_listen(i)
                 yield f
                 #~ yield "<br />"
                 #~ yield go_library(p,p)
                 yield "</li>"
     
-    def ajax_add(self, f_enc, rsrnd=0):
-        f = u64dec(f_enc)
+    def ajax_add(self, f):
         self.mpd.add([f, ])
-        
         return "player"  # tell to update player

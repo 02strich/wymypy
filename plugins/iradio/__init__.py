@@ -19,14 +19,9 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-import base64
-u64enc = base64.urlsafe_b64encode
-u64dec = base64.urlsafe_b64decode
-
 from couchdbkit import *
 
 import config
-
 
 class Greeting(Document):
     url = StringProperty()
@@ -43,7 +38,7 @@ class IRadio(wPlugin):
             <button onclick='ajax_radio()'>Radio</button>
         """
     
-    def ajax_radio(self, ignore=0, rsrnd=0):
+    def ajax_radio(self, ignore=0):
         yield "<h2>Internet Radio</h2>"
         
         # list stations
@@ -52,7 +47,7 @@ class IRadio(wPlugin):
             cur = self.db.get(i['id'])
             classe = index % 2 == 0 and " class='p'" or ''
             yield "<li%s>" % classe
-            yield """<a href='#' onclick='ajax_streamPlay("%s");'><span>></span></a>""" % (u64enc(cur['url']),)
+            yield """<a href='#' onclick='ajax_streamPlay("%s");'><span>></span></a>""" % (cur['url'])
             yield cur['url']
             yield "</li>"
             index += 1
@@ -66,13 +61,11 @@ class IRadio(wPlugin):
           </form>
         """
     
-    def ajax_streamPlay(self, url, rsrnd=0):
-        f = u64dec(url)
-        print f
-        self.mpd.add([f])
+    def ajax_streamPlay(self, url):
+        self.mpd.add([url])
         return "player"
     
-    def ajax_streamAdd(self, f, rsrnd=0):
+    def ajax_streamAdd(self, f):
         self.db.save_doc({'url': f})
         for ele in self.ajax_radio():
             yield ele

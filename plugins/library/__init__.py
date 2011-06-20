@@ -21,9 +21,6 @@
 #
 
 import os
-import base64
-u64enc = base64.urlsafe_b64encode
-u64dec = base64.urlsafe_b64decode
 
 
 class Library(wPlugin):
@@ -36,11 +33,9 @@ class Library(wPlugin):
             <button onclick='ajax_library("")'>Library</button>
         """
     
-    def ajax_library(self, dir_enc, rsrnd=0):
-        dir = u64dec(dir_enc)
-        
-        go_library = lambda link, aff: """<a href="#" onclick='ajax_library("%s")'>%s</a>""" % (u64enc(link), aff)
-        go_add = lambda f: """<a href='#' onclick='ajax_ladd("%s");'>%s</a>""" % (u64enc(f), "<span>&gt;</span>")
+    def ajax_library(self, dir):
+        go_library = lambda link, aff: """<a href="#" onclick='ajax_library("%s")'>%s</a>""" % (link, aff)
+        go_add = lambda f: """<a href='#' onclick='ajax_ladd("%s");'>%s</a>""" % (f, "<span>&gt;</span>")
         if dir != "":
             yield "<h2>"
             path = ""
@@ -80,7 +75,6 @@ class Library(wPlugin):
             yield "</li>"
             c += 1
     
-    def ajax_ladd(self, f_enc, rsrnd=0):
-        f = u64dec(f_enc)
+    def ajax_ladd(self, f):
         self.mpd.add([f, ])
         return "player"  # tell to update player

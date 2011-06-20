@@ -23,7 +23,7 @@ class wPlugin(object):
     def init(self):  # to override
         pass
     
-    def get(self, path):  # to override
+    def show(self):  # to override
         pass
     
     # for both library and search plugins
