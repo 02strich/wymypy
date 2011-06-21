@@ -61,11 +61,13 @@ function sajax_do_call( url, args) {
 		if (status == "-")
 			alert("Error: " + data);
 		else {
-			//if (data) {
-			  var obj=eval("("+data+")"); // data i a json dict
-			  for(var id in obj)
-				  document.getElementById(id).innerHTML = obj[id];
-			//}
+			// data is a json dict
+			var obj = eval("(" + data + ")");
+			for(var id in obj) {
+				var target = $(id)
+				if(target)
+					target.innerHTML = obj[id];
+			}
 		}
 	}
 	x.send(data);
@@ -77,10 +79,14 @@ function sajax_do_call( url, args) {
 function refresh(isForced)
 {
 	ajax_player(isForced);
-
-	var v=$("timer").value;
-	if(v!="")
-		_timer=window.setTimeout('refresh()',parseInt(v));
+	
+	if($("timer"))
+		var v = $("timer").value;
+	else
+		var v = "5000"
+	
+	if(v != "")
+		_timer = window.setTimeout('refresh()', parseInt(v));
 }
 
 function seekclick(e)

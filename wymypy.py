@@ -40,6 +40,10 @@ from plugins import wPlugin  # import in __builtins__ !!!
 def root():
 	return render_template('main.html', version=__version__, plugins=sorted(app.plugins.values(), key=lambda plugin: plugin.button_index))
 
+@app.route('/player')
+def player():
+	return render_template('player.html')
+
 
 @app.route('/plugins.css')
 def plugins_css():
