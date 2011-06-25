@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='wymypy',
     version = '2.0',
     description = 'Simple web interface for controlling MPD',
     maintainer = 'Stefan Richter',
     maintainer_email = 'stefan@02strich.de',
-    packages = ['wymypy'],
+    packages = find_packages(),
+    package_data = {'wymypy': ['static/*.*', 'templates/*.*']},
     install_requires = ['Flask'],
     entry_points = {
         'console_scripts': [
