@@ -93,6 +93,7 @@ class Player(wPlugin):
 			yield """
 			<h2>Playlist (%d)
 			<button onclick='ajax_ope("clear");'>clear</button>
+			<button onclick='ajax_ope("clear_old");'>clear old</button>
 			<button onclick='ajax_ope("shuffle");'>shuffle</button>
 			</h2>
 			""" % tot
@@ -138,6 +139,9 @@ class Player(wPlugin):
 			self.mpd.stop()
 		elif op == "clear":
 			self.mpd.clear()
+		elif op == "clear_old":
+			idx, tot = self.mpd.getPlaylistPosition()
+			self.mpd.delete([0, idx])
 		elif op == "shuffle":
 			self.mpd.shuffleIt()
 		elif op == "seek":
