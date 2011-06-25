@@ -4,11 +4,8 @@
 import os
 import sys
 import inspect
-import base64
-u64enc = base64.urlsafe_b64encode
-u64dec = base64.urlsafe_b64decode
 
-import config
+import wymypy.config
 
 class wPlugin(object):
     # attributs instance
@@ -40,26 +37,25 @@ class wPlugin(object):
         """ instanciate classes which inherits of me, return the list """
         instances = {}
         cwd = os.path.abspath(os.path.dirname(__file__))
-        sys.path.append(cwd)
         
         for directory in os.listdir(cwd):
             if not os.path.isdir(os.path.join(cwd, directory)): continue
-            if directory in config.BANNED_PLUGINS: continue
+            if directory in wymypy.config.BANNED_PLUGINS: continue
             
             try:
-                __import__(directory, {'wPlugin': wPlugin})
+                __import__("wymypy.plugins.%s" % directory)
             except Exception, m:
                 print "Plugin import error for [%(name)s]: %(error)s" % {'name': directory, 'error': m}
                 continue
             
-            plugin_module = sys.modules[directory]
+            plugin_module = sys.modules["wymypy.plugins.%s" % directory]
             for name in dir(plugin_module):
                 current_class = getattr(plugin_module, name)
                 if not inspect.isclass(current_class):
                     continue
                 
                 try:
-                    isPlugin = issubclass(current_class, wPlugin) and current_class != wPlugin
+                    isPlugin = issubclass(current_class, wymypy.plugins.wPlugin) and current_class != wymypy.plugins.wPlugin
                 except Exception, m:
                     isPlugin = False
                 
@@ -70,12 +66,6 @@ class wPlugin(object):
                     except Exception, m:
                         print "Plugin instanciate error for", directory, ":", m
         return instances
-
-# make the class wPlugin available without import
-try:
-    __builtins__["wPlugin"] = wPlugin
-except:
-    __builtins__.__dict__["wPlugin"] = wPlugin
 
 if __name__ == "__main__":
     class FakeMpd:

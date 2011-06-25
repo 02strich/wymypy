@@ -21,7 +21,8 @@
 #
 from couchdbkit import *
 
-import config
+import wymypy.config
+from wymypy.plugins import wPlugin
 
 class Greeting(Document):
     url = StringProperty()
@@ -30,7 +31,7 @@ class Greeting(Document):
 class IRadio(wPlugin):
     def init(self):
         self.button_index = 50
-        self.server = Server(uri=config.COUCHDB_URL)
+        self.server = Server(uri=wymypy.config.COUCHDB_URL)
         self.db = self.server.get_or_create_db("mpd_radio")
     
     def show(self):

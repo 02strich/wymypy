@@ -19,7 +19,8 @@
 #	   along with this program; if not, write to the Free Software
 #	   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-import config
+import wymypy.config
+from wymypy.plugins import wPlugin
 
 class Player(wPlugin):	  
 	def ajax_player(self, isForced=0):
@@ -45,7 +46,7 @@ class Player(wPlugin):
 					yield s.title and s.title or "playing ..."
 				else:
 					# file
-					yield self.mpd.display(s, config.TAG_FORMAT)
+					yield self.mpd.display(s, wymypy.config.TAG_FORMAT)
 				yield "<br />"
 				
 				# aff position
@@ -108,7 +109,7 @@ class Player(wPlugin):
 				if s.path.lower().startswith("http://"):
 					title = s.path
 				else:
-					title = self.mpd.display(s, config.TAG_FORMAT)
+					title = self.mpd.display(s, wymypy.config.TAG_FORMAT)
 
 				yield "<li%s>" % classe
 				yield "%03d" % (i + 1)

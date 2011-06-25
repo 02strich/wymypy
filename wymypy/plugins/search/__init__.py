@@ -19,12 +19,9 @@
 #      along with this program; if not, write to the Free Software
 #      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-
 import os
-import base64
-u64enc = base64.urlsafe_b64encode
-u64dec = base64.urlsafe_b64decode
 
+from wymypy.plugins import wPlugin
 
 class Search(wPlugin):
     

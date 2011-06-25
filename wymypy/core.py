@@ -25,23 +25,15 @@ import sys
 
 import config
 from libs.mpdsafe import MpdSafe
+from plugins import wPlugin
 
 from flask import Flask, render_template, request
 app = Flask(__name__)
 app.config.from_object(config)
 
-__version__ = "1.3"
-
-try:
-    os.chdir(os.path.dirname(__file__))
-except:
-    pass
-
-from plugins import wPlugin  # import in __builtins__ !!!
-
 @app.route('/')
 def root():
-	return render_template('main.html', version=__version__, plugins=sorted(app.plugins.values(), key=lambda plugin: plugin.button_index))
+	return render_template('main.html', plugins=sorted(app.plugins.values(), key=lambda plugin: plugin.button_index))
 
 @app.route('/player')
 def player():
@@ -127,7 +119,7 @@ def jsonize(dict):
 
 
 ###############################################################################
-if __name__ == "__main__":
+def main():
 	# connect to MPD
 	MPD = MpdSafe(config.MPD_HOST, config.MPD_PORT)
 	err = MPD.connect()
@@ -142,4 +134,7 @@ if __name__ == "__main__":
 	# start server
 	name, port = app.config['SERVER_NAME'].split(':')
 	app.run(host=name, port=int(port))
+
+if __name__ == "__main__":
+	main()
 
