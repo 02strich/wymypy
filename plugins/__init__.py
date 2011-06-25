@@ -8,6 +8,7 @@ import base64
 u64enc = base64.urlsafe_b64encode
 u64dec = base64.urlsafe_b64decode
 
+import config
 
 class wPlugin(object):
     # attributs instance
@@ -42,8 +43,9 @@ class wPlugin(object):
         sys.path.append(cwd)
         
         for directory in os.listdir(cwd):
-            if not os.path.isdir(os.path.join(cwd, directory)):
-                continue
+            if not os.path.isdir(os.path.join(cwd, directory)): continue
+            if directory in config.BANNED_PLUGINS: continue
+            
             try:
                 __import__(directory, {'wPlugin': wPlugin})
             except Exception, m:
