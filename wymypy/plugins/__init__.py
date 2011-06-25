@@ -28,7 +28,7 @@ class wPlugin(object):
     def go_listen(self, file):
         """ Draw a "Listen now button" for mp3 files """
         if file[-4:].lower() == ".mp3":
-            return """<a href="#" onclick='ajax_listen("%s")'><span>V</span></a>""" % u64enc(file)
+            return """<a href="#" onclick='ajax_listen("%s")'><span>V</span></a>""" % file
         else:
             return ""
     
