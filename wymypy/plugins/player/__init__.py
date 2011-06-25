@@ -83,6 +83,7 @@ class Player(wPlugin):
 			yield """
 			<button onclick='ajax_ope("voldown");'>-</button>
 			<button onclick='ajax_ope("volup");'>+</button>
+			<button onclick='ajax_ope("mute");'>@</button>
 			"""
 			yield str(stat.volume)
 			yield "%"
@@ -150,6 +151,8 @@ class Player(wPlugin):
 			self.mpd.volumeUp()
 		elif op == "voldown":
 			self.mpd.volumeDown()
+		elif op == "mute":
+			self.mpd.mute()
 		elif op == "changeDisplay":
 			self.mpd.changeDisplay(int(idx))
 		else:

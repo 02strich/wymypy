@@ -27,6 +27,7 @@ class MpdSafe:
         self.__current = None
         self.__prec = None
         self.__dispTags = False  # disp filenames
+        self.__mute_cache = 0
 
     def connect(self):
         try:
@@ -134,6 +135,16 @@ class MpdSafe:
     def volumeDown(self):
         stat = self.__cnx.status()
         self.__cnx.volume(max(0, stat.volume - 5))
+        
+    @protect()
+    def mute(self):
+        stat = self.__cnx.status()
+        if stat.volume == 0:
+            new_volume = self.__mute_cache
+        else:
+            self.__mute_cache = stat.volume
+            new_volume = 0
+        self.__cnx.volume(new_volume)
 
     def changeDisplay(self, checked):
         self.__dispTags = (checked == 1)
