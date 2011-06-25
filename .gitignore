@@ -2,3 +2,6 @@
 
 /mpd/
 /mpd.conf
+/wymypy.egg-info/
+/dist/
+/build/
