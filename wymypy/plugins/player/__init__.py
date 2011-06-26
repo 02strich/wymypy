@@ -142,7 +142,7 @@ class Player(wPlugin):
 			self.mpd.clear()
 		elif op == "clear_old":
 			idx, tot = self.mpd.getPlaylistPosition()
-			self.mpd.delete([0, idx])
+			self.mpd.delete([[0, max(0, idx-2)]])
 		elif op == "shuffle":
 			self.mpd.shuffleIt()
 		elif op == "seek":
