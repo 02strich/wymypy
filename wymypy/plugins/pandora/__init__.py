@@ -23,6 +23,7 @@ import time
 import threading
 import urllib2
 from pandora import Pandora as PandoraPython
+from pandora.connection import AuthenticationError
 
 import wymypy.config
 from wymypy.plugins import wPlugin
@@ -39,9 +40,14 @@ class WorkerThread(threading.Thread):
             if self.playing:
                 idx, tot = self.mpd.getPlaylistPosition()
                 if wymypy.config.DEBUG: print "Current space left: " + str(tot - idx)
+                
                 if tot - idx < 3:
                     for i in range(0,2):
-                        song = self.pandora.getNextSong()
+                        try:
+                            song = self.pandora.getNextSong()
+                        except AuthenticationError:
+                            self.pandora.authenticate(username=wymypy.config.PANDORA_USERNAME, password=wymypy.config.PANDORA_PASSWORD)
+                            song = self.pandora.getNextSong()
                         self.mpd.add([song['audioURL']])
             time.sleep(5)
 
@@ -97,7 +103,12 @@ class Pandora(wPlugin):
     def ajax_switchStation(self, stationdId, stationName):
         self.currentStationId = stationdId
         self.currentStationName = stationName
-        self.pandora.switchStation(stationdId)
+
+        try:
+            self.pandora.switchStation(stationdId)
+        except AuthenticationError:
+            self.pandora.authenticate(username=wymypy.config.PANDORA_USERNAME, password=wymypy.config.PANDORA_PASSWORD)
+            self.pandora.switchStation(stationdId)
         
         return self.ajax_pandora()
     
