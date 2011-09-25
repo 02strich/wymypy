@@ -24,6 +24,9 @@ class wPlugin(object):
     def show(self):  # to override
         pass
     
+    def index(self):
+        pass
+    
     # for both library and search plugins
     def go_listen(self, file):
         """ Draw a "Listen now button" for mp3 files """

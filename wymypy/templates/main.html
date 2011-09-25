@@ -26,7 +26,7 @@
 	<body onload="init();">
 		<div id="zonePlugins">
 			{% for plugin in plugins %}
-				{{ plugin.show()|safe }}
+				{{ plugin.show()|ifnotnone|safe }}
 			{% endfor %}
 		</div>
 		

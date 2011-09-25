@@ -28,8 +28,16 @@ from libs.mpdsafe import MpdSafe
 from plugins import wPlugin
 
 from flask import Flask, render_template, request
+from werkzeug.serving import WSGIRequestHandler
 app = Flask(__name__)
 app.config.from_object(config)
+
+@app.template_filter('ifnotnone')
+def ifnotnone_filter(s):
+	if s == None:
+		return ""
+	else:
+		return s
 
 @app.route('/')
 def root():
@@ -68,7 +76,7 @@ def plugins_js():
 
 @app.route('/__ajax/<method>', methods=["GET", "POST"])
 @app.route('/__ajax/<plugin>/<method>', methods=["GET", "POST"])
-def makeajax(method, plugin=None):
+def make_ajax(method, plugin=None):
 	inst = app.plugins[plugin.lower()]
 	method = "ajax_" + method
 	arg = [str(a) for a in request.form.values()]
@@ -95,8 +103,24 @@ def makeajax(method, plugin=None):
 		# print "AJAXCALL:",method,arg,"--->",dic.keys()
 		return "+ " + jsonize(dic)
 	else:
-		return "- methode non existante : ", pmethod
+		return "- methode non existent: ", method
 
+
+@app.route('/plugin/<plugin>', methods=["GET", "POST"])
+@app.route('/plugin/<plugin>/<method>', methods=["GET", "POST"])
+def plugin_methods(plugin, method=None):
+	inst = app.plugins[plugin.lower()]
+	arg = [str(a) for a in request.form.values()]
+	
+	if method == None:
+		return inst.index()
+	else:
+		if hasattr(inst, method):
+			fct = getattr(inst, method)
+			return fct(*(arg), **({}))
+		else:
+			return "- methode non existent: ", method
+	
 
 def flux2dict(iter):
     l = {}
@@ -119,6 +143,9 @@ def jsonize(dict):
 
 
 ###############################################################################
+class WyMyPyRequestHandler(WSGIRequestHandler):
+	wbufsize = -1
+
 def main():
 	# connect to MPD
 	MPD = MpdSafe(config.MPD_HOST, config.MPD_PORT)
@@ -133,7 +160,7 @@ def main():
 	
 	# start server
 	name, port = app.config['SERVER_NAME'].split(':')
-	app.run(host=name, port=int(port))
+	app.run(host=name, port=int(port), request_handler=WyMyPyRequestHandler)
 
 if __name__ == "__main__":
 	main()
