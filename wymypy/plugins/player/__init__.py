@@ -136,6 +136,12 @@ class Player(wPlugin):
 			self.mpd.play()
 		elif op == "pause":
 			self.mpd.pause()
+		elif op == "playpause":
+			stat = self.mpd.status()
+			if stat.state != 2:
+				self.mpd.play()
+			else:
+				self.mpd.pause()
 		elif op == "stop":
 			self.mpd.stop()
 		elif op == "clear":
