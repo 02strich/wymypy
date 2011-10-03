@@ -159,8 +159,7 @@ def main():
 	app.plugins = wPlugin.get_instances(MPD)
 	
 	# start server
-	name, port = app.config['SERVER_NAME'].split(':')
-	app.run(host=name, port=int(port), request_handler=WyMyPyRequestHandler)
+	app.run(host=app.config['SERVER_IFACE'], port=app.config['SERVER_PORT'], request_handler=WyMyPyRequestHandler)
 
 if __name__ == "__main__":
 	main()
