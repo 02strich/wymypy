@@ -25,8 +25,8 @@ import urllib2
 from pandora import Pandora as PandoraPython
 from pandora.connection import AuthenticationError
 
-import wymypy.config
-from wymypy.plugins import wPlugin
+import config
+from plugins import wPlugin
 
 class WorkerThread(threading.Thread):
     def __init__(self, MPD, pandora):
@@ -39,14 +39,14 @@ class WorkerThread(threading.Thread):
         while True:
             if self.playing:
                 idx, tot = self.mpd.getPlaylistPosition()
-                if wymypy.config.DEBUG: print "Current space left: " + str(tot - idx)
+                if config.DEBUG: print "Current space left: " + str(tot - idx)
                 
                 if tot - idx < 3:
                     for i in range(0,2):
                         try:
                             song = self.pandora.getNextSong()
                         except AuthenticationError:
-                            self.pandora.authenticate(username=wymypy.config.PANDORA_USERNAME, password=wymypy.config.PANDORA_PASSWORD)
+                            self.pandora.authenticate(username=config.PANDORA_USERNAME, password=config.PANDORA_PASSWORD)
                             song = self.pandora.getNextSong()
                         self.mpd.add([song['audioURL']])
             time.sleep(5)
@@ -56,14 +56,14 @@ class Pandora(wPlugin):
         self.button_index = 51
         
         # setup proxy
-        if wymypy.config.PANDORA_PROXY:
-           proxy_support = urllib2.ProxyHandler({"http" : wymypy.config.PANDORA_PROXY})
+        if config.PANDORA_PROXY:
+           proxy_support = urllib2.ProxyHandler({"http" : config.PANDORA_PROXY})
            opener = urllib2.build_opener(proxy_support)
            urllib2.install_opener(opener)
         
         # setup pandora
         self.pandora = PandoraPython()
-        if not self.pandora.authenticate(username=wymypy.config.PANDORA_USERNAME, password=wymypy.config.PANDORA_PASSWORD):
+        if not self.pandora.authenticate(username=config.PANDORA_USERNAME, password=config.PANDORA_PASSWORD):
             raise ValueError("Wrong pandora credentials or proxy supplied")
         self.stationCache = self.pandora.getStationList()
         
@@ -107,7 +107,7 @@ class Pandora(wPlugin):
         try:
             self.pandora.switchStation(stationdId)
         except AuthenticationError:
-            self.pandora.authenticate(username=wymypy.config.PANDORA_USERNAME, password=wymypy.config.PANDORA_PASSWORD)
+            self.pandora.authenticate(username=config.PANDORA_USERNAME, password=config.PANDORA_PASSWORD)
             self.pandora.switchStation(stationdId)
         
         return self.ajax_pandora()

@@ -4,8 +4,9 @@
 import os
 import sys
 import inspect
+import traceback
 
-import wymypy.config
+import config
 
 class wPlugin(object):
     # attributs instance
@@ -43,22 +44,23 @@ class wPlugin(object):
         
         for directory in os.listdir(cwd):
             if not os.path.isdir(os.path.join(cwd, directory)): continue
-            if directory in wymypy.config.BANNED_PLUGINS: continue
+            if directory in config.BANNED_PLUGINS: continue
             
             try:
-                __import__("wymypy.plugins.%s" % directory)
+                __import__("plugins.%s" % directory)
             except Exception, m:
                 print "Plugin import error for [%(name)s]: %(error)s" % {'name': directory, 'error': m}
+                traceback.print_exc()
                 continue
             
-            plugin_module = sys.modules["wymypy.plugins.%s" % directory]
+            plugin_module = sys.modules["plugins.%s" % directory]
             for name in dir(plugin_module):
                 current_class = getattr(plugin_module, name)
                 if not inspect.isclass(current_class):
                     continue
                 
                 try:
-                    isPlugin = issubclass(current_class, wymypy.plugins.wPlugin) and current_class != wymypy.plugins.wPlugin
+                    isPlugin = issubclass(current_class, wPlugin) and current_class != wPlugin
                 except Exception, m:
                     isPlugin = False
                 
@@ -68,6 +70,7 @@ class wPlugin(object):
                         instances[directory] = current_class(mpd)
                     except Exception, m:
                         print "Plugin instanciate error for", directory, ":", m
+                        traceback.print_exc()
         return instances
 
 if __name__ == "__main__":

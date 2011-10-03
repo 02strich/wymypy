@@ -21,7 +21,7 @@
 #
 
 import os
-from wymypy.plugins import wPlugin
+from plugins import wPlugin
 
 class Library(wPlugin):
     

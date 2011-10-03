@@ -22,8 +22,8 @@
 from flask import make_response
 from string import Template
 
-import wymypy.config
-from wymypy.plugins import wPlugin
+import config
+from plugins import wPlugin
 
 class CiscoRadio(wPlugin):
     def init(self):
@@ -49,7 +49,7 @@ class CiscoRadio(wPlugin):
     <Name>Previous</Name>
     <URL>http://$server/plugin/cisco/prev</URL>
 </MenuItem>
-</CiscoIPPhoneMenu>""").substitute(server=wymypy.config.SERVER_NAME), 200)
+</CiscoIPPhoneMenu>""").substitute(server=config.SERVER_NAME), 200)
         resp.headers['Content-type'] = 'text/xml'
         resp.headers['Connection'] = 'close'
         resp.headers['Expires'] = '-1'
