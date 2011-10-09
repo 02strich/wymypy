@@ -419,7 +419,7 @@ class MpdConnection(object):
     self.executeCommand('seek "%d" "%d"' % (songNum, absSecs))
 
   def sendVolumeCommand(self, newVolume):
-    self.executeCommand('volume "%d"' % newVolume)
+    self.executeCommand('setvol "%d"' % newVolume)
 
   def sendRandomCommand(self, mode):
     self.executeCommand('random "%d"' % mode)
@@ -909,7 +909,7 @@ class MpdController(MpdConnection):
     self._checkInts(vol)
 
     try:
-      self.sendVolumeCommand(vol - self.status().volume)
+      self.sendVolumeCommand(max(min(vol, 100), 0))
     finally:
       self.finishCommand()
 

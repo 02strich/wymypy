@@ -129,12 +129,12 @@ class MpdSafe:
     @protect()
     def volumeUp(self):
         stat = self.__cnx.status()
-        self.__cnx.volume(min(100, stat.volume + 5))
+        self.__cnx.volume(stat.volume + 5)
 
     @protect()
     def volumeDown(self):
         stat = self.__cnx.status()
-        self.__cnx.volume(max(0, stat.volume - 5))
+        self.__cnx.volume(stat.volume - 5)
         
     @protect()
     def mute(self):
