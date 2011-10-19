@@ -33,13 +33,13 @@ class WorkerThread(threading.Thread):
         threading.Thread.__init__(self)
         self.mpd     = MPD
         self.pandora = pandora
-        self.playing = False
+        self.shouldDie = False
     
     def run(self):
-        while True:
-            if self.playing:
+        while not self.shouldDie:
+            try:
                 idx, tot = self.mpd.getPlaylistPosition()
-                if config.DEBUG: print "Current space left: " + str(tot - idx)
+                self.mpd.logger.debug("pandora_worker - tot: %d idx: %d", tot, idx)
                 
                 if tot - idx < 3:
                     for i in range(0,2):
@@ -49,7 +49,10 @@ class WorkerThread(threading.Thread):
                             self.pandora.authenticate(username=config.PANDORA_USERNAME, password=config.PANDORA_PASSWORD)
                             song = self.pandora.getNextSong()
                         self.mpd.add([song['audioURL']])
-            time.sleep(5)
+                time.sleep(5)
+            except Exception, e:
+                self.mpd.logger.exception(e)
+
 
 class Pandora(wPlugin):
     def init(self):
@@ -73,7 +76,6 @@ class Pandora(wPlugin):
         
         self.worker = WorkerThread(self.mpd, self.pandora)
         self.worker.daemon = True
-        self.worker.start()
     
     def show(self):
         return """
@@ -109,15 +111,20 @@ class Pandora(wPlugin):
         except AuthenticationError:
             self.pandora.authenticate(username=config.PANDORA_USERNAME, password=config.PANDORA_PASSWORD)
             self.pandora.switchStation(stationdId)
+        except Exception, e:
+            self.mpd.logger.exception(e)
         
         return self.ajax_pandora()
     
     def ajax_pandoraOpe(self, op):
         if op == "play" and self.currentStationId:
+            self.worker.shouldDie = False
+            self.worker.start()
             self.playing = True
-            self.worker.playing = True
         else:
+            self.worker.shouldDie = True
+            self.worker.join()
             self.playing = False
-            self.worker.playing = False
+            
         return self.ajax_pandora()
     
