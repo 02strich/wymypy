@@ -103,7 +103,7 @@ class Pandora(wPlugin):
             index += 1
         
         yield "<br/>"
-        yield """<a href='#' onclick='ajax_pandoraOpe("reload");'><span>></span></a>"""
+        yield """<a href='#' onclick='ajax_pandoraOpe("reload");'>Reload station list</a>"""
     
     def ajax_switchStation(self, stationdId, stationName):
         self.currentStationId = stationdId
