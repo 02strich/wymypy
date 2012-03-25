@@ -101,6 +101,9 @@ class Pandora(wPlugin):
             yield station ['stationName']
             yield "</li>"
             index += 1
+        
+        yield "<br/>"
+        yield """<a href='#' onclick='ajax_pandoraOpe("reload");'><span>></span></a>"""
     
     def ajax_switchStation(self, stationdId, stationName):
         self.currentStationId = stationdId
@@ -121,10 +124,12 @@ class Pandora(wPlugin):
             self.worker.shouldDie = False
             self.worker.start()
             self.playing = True
-        else:
+        elif op == "stop":
             self.worker.shouldDie = True
             self.worker.join()
             self.playing = False
+        elif op == "reload":
+            self.stationCache = self.pandora.getStationList()
             
         return self.ajax_pandora()
     
