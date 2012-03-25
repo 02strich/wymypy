@@ -155,10 +155,12 @@ def main():
 		sys.exit(-1)
 		
 	# configure logging
-	hdlr = logging.FileHandler('/tmp/wymypy.log')
-	formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-	hdlr.setFormatter(formatter)
-	app.logger.addHandler(hdlr)
+	if hasattr(config, "LOGGING"):
+		import logging
+		hdlr = logging.FileHandler(config.LOGGING)
+		formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+		hdlr.setFormatter(formatter)
+		app.logger.addHandler(hdlr)
 	MPD.logger = app.logger
 	
 	# configure app
