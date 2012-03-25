@@ -31,7 +31,7 @@ class Player(wPlugin):
 		  #~ print i, getattr(stat,i)
 
 		if not stat:
-			self.mpd.stop()
+			#self.mpd.stop()
 			yield "Error : Can't play that!"
 
 			class stat:
