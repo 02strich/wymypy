@@ -31,9 +31,10 @@ from plugins import wPlugin
 class WorkerThread(threading.Thread):
     def __init__(self, MPD, pandora):
         threading.Thread.__init__(self)
-        self.mpd     = MPD
-        self.pandora = pandora
+        self.mpd       = MPD
+        self.pandora   = pandora
         self.shouldDie = False
+        self.retry     = False
     
     def run(self):
         while not self.shouldDie:
@@ -45,9 +46,14 @@ class WorkerThread(threading.Thread):
                     for i in range(0,2):
                         try:
                             song = self.pandora.getNextSong()
-                        except AuthenticationError:
-                            self.pandora.authenticate(username=config.PANDORA_USERNAME, password=config.PANDORA_PASSWORD)
-                            song = self.pandora.getNextSong()
+                            self.retry = False
+                        except Exception, e:
+                            if not self.retry:
+                                self.retry = True
+                                self.pandora.authenticate(username=config.PANDORA_USERNAME, password=config.PANDORA_PASSWORD)
+                                song = self.pandora.getNextSong()
+                            else:
+                                self.mpd.logger.exception(e)
                         self.mpd.add([song['audioURL']])
                 time.sleep(5)
             except Exception, e:
@@ -111,10 +117,10 @@ class Pandora(wPlugin):
 
         try:
             self.pandora.switchStation(stationdId)
-        except AuthenticationError:
+        except Exception, e:
             self.pandora.authenticate(username=config.PANDORA_USERNAME, password=config.PANDORA_PASSWORD)
             self.pandora.switchStation(stationdId)
-        except Exception, e:
+            
             self.mpd.logger.exception(e)
         
         return self.ajax_pandora()
