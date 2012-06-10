@@ -42,6 +42,14 @@ class CiscoRadio(wPlugin):
     <URL>http://$server/plugin/cisco/stop</URL>
 </MenuItem>
 <MenuItem>
+    <Name>Volume Up</Name>
+    <URL>http://$server/plugin/cisco/volup</URL>
+</MenuItem>
+<MenuItem>
+    <Name>Volume Down</Name>
+    <URL>http://$server/plugin/cisco/voldown</URL>
+</MenuItem>
+<MenuItem>
     <Name>Next</Name>
     <URL>http://$server/plugin/cisco/next</URL>
 </MenuItem>
@@ -69,4 +77,12 @@ class CiscoRadio(wPlugin):
     
     def prev(self):
         self.mpd.prev()
+        return self.index()
+    
+    def volup(self):
+        self.mpd.volumeUp()
+        return self.index()
+    
+    def voldown(self):
+        self.mpd.volumeDown()
         return self.index()
