@@ -79,9 +79,6 @@ class Pandora(wPlugin):
         self.currentStationId = None
         self.currentStationName = None
         self.playing = False
-        
-        self.worker = WorkerThread(self.mpd, self.pandora)
-        self.worker.daemon = True
     
     def show(self):
         return """
@@ -127,7 +124,8 @@ class Pandora(wPlugin):
     
     def ajax_pandoraOpe(self, op):
         if op == "play" and self.currentStationId:
-            self.worker.shouldDie = False
+            self.worker = WorkerThread(self.mpd, self.pandora)
+            self.worker.daemon = True
             self.worker.start()
             self.playing = True
         elif op == "stop":
