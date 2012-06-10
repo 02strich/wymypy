@@ -74,7 +74,7 @@ class Pandora(wPlugin):
         self.pandora = PandoraPython()
         if not self.pandora.authenticate(username=config.PANDORA_USERNAME, password=config.PANDORA_PASSWORD):
             raise ValueError("Wrong pandora credentials or proxy supplied")
-        self.stationCache = self.pandora.getStationList()
+        self.stationCache = self.pandora.get_station_list()
         
         self.currentStationId = None
         self.currentStationName = None
