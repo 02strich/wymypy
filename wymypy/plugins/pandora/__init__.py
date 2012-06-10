@@ -133,7 +133,7 @@ class Pandora(wPlugin):
             self.worker.join()
             self.playing = False
         elif op == "reload":
-            self.stationCache = self.pandora.getStationList()
+            self.stationCache = self.pandora.get_station_list()
             
         return self.ajax_pandora()
     
