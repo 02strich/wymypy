@@ -45,16 +45,16 @@ class WorkerThread(threading.Thread):
                 if tot - idx < 3:
                     for i in range(0,2):
                         try:
-                            song = self.pandora.getNextSong()
+                            song = self.pandora.get_next_song()
                             self.retry = False
                         except Exception, e:
                             if not self.retry:
                                 self.retry = True
                                 self.pandora.authenticate(username=config.PANDORA_USERNAME, password=config.PANDORA_PASSWORD)
-                                song = self.pandora.getNextSong()
+                                song = self.pandora.get_next_song()
                             else:
                                 self.mpd.logger.exception(e)
-                        self.mpd.add([song['audioURL']])
+                        self.mpd.add([song['additionalAudioUrl']])
                 time.sleep(5)
             except Exception, e:
                 self.mpd.logger.exception(e)
@@ -116,10 +116,10 @@ class Pandora(wPlugin):
         self.currentStationName = stationName
 
         try:
-            self.pandora.switchStation(stationdId)
+            self.pandora.switch_station(stationdId)
         except Exception, e:
             self.pandora.authenticate(username=config.PANDORA_USERNAME, password=config.PANDORA_PASSWORD)
-            self.pandora.switchStation(stationdId)
+            self.pandora.switch_station(stationdId)
             
             self.mpd.logger.exception(e)
         
