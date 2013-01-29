@@ -101,7 +101,10 @@ def make_ajax(method, plugin=None):
 		
 		dic = flux2dict(iter)
 		# print "AJAXCALL:",method,arg,"--->",dic.keys()
-		return "+ " + jsonize(dic)
+		response = "+ " + jsonize(dic)
+		
+		# set cach-control header for Safari on iOS 6
+		return (response, 200, {"Cache-Control": "no-cache"})
 	else:
 		return "- methode non existent: ", method
 

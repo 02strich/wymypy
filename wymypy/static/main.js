@@ -115,11 +115,11 @@ function seekclick(e)
 
 function changeDisplay(elt)
 {
-  ajax_ope("changeDisplay",(elt.checked?"1":"0"));
+	ajax_ope("changeDisplay",(elt.checked?"1":"0"));
 }
 
 function init()
 {
-  // ajax_liste("");
-  refresh(1);
+	// ajax_liste("");
+	refresh(1);
 }
