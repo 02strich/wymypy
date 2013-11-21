@@ -79,7 +79,7 @@ class Player(wPlugin):
 		<button onclick='ajax_ope("next");'>>></button>
 		"""
 
-		if stat.state != 0:
+		if stat.state != 0 and stat.volume != -1:
 			yield """
 			<button onclick='ajax_ope("voldown");'>-</button>
 			<button onclick='ajax_ope("volup");'>+</button>
@@ -87,6 +87,9 @@ class Player(wPlugin):
 			"""
 			yield str(stat.volume)
 			yield "%"
+
+		if hasattr(config, "MPD_STREAM") and config.MPD_STREAM:
+			yield """&nbsp;&nbsp;<button onclick='audio_playstop();'>> []</button> """
 
 		if isForced or self.mpd.needRedrawPlaylist():
 			idx, tot = self.mpd.getPlaylistPosition()

@@ -41,7 +41,7 @@ def ifnotnone_filter(s):
 
 @app.route('/')
 def root():
-	return render_template('main.html', plugins=sorted(app.plugins.values(), key=lambda plugin: plugin.button_index))
+	return render_template('main.html', stream_url=config.MPD_STREAM if hasattr(config, "MPD_STREAM") else None, plugins=sorted(app.plugins.values(), key=lambda plugin: plugin.button_index))
 
 @app.route('/player')
 def player():

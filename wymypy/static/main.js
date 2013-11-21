@@ -118,6 +118,19 @@ function changeDisplay(elt)
 	ajax_ope("changeDisplay",(elt.checked?"1":"0"));
 }
 
+function audio_playstop() {
+	var song = document.getElementsByTagName('audio')[0];
+	if(song) {
+		song.pause();
+		song.parentNode.removeChild(song);
+	} else {
+		var container = document.getElementById("stream_audio_container");
+		container.innerHTML = "<audio src='" + container.dataset.src  + "' autoplay></audio>"
+	}
+
+	return false;
+}
+
 function init()
 {
 	// ajax_liste("");
