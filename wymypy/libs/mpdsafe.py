@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import mpdclient
 import os
 
@@ -18,7 +16,7 @@ def protect(ret=None):
 
 class MpdSafe:
 
-    def __init__(self, host, port):
+    def __init__(self, host=None, port=None):
         self.__cnx = None
         self.__host = host
         self.__port = port
@@ -29,12 +27,13 @@ class MpdSafe:
         self.__dispTags = False  # disp filenames
         self.__mute_cache = 0
 
-    def connect(self):
-        try:
-            self.__cnx = mpdclient.MpdController(self.__host, self.__port)
-            return ""
-        except Exception, m:
-            return m
+    def connect(self, host=None, port=None):
+        if self.__host is None:
+            self.__host = host
+        if self.__port is None:
+            self.__port = port
+
+        self.__cnx = mpdclient.MpdController(self.__host, self.__port)
 
     def needRedrawPlaylist(self):
         return self.__current != self.__prec
@@ -177,7 +176,3 @@ class MpdSafe:
               return "<font color='red'>" + os.path.basename(s.path) + "</font>"
         else:
             return os.path.basename(s.path)
-
-
-if __name__ == "__main__":
-    pass

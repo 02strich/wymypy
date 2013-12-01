@@ -1,32 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-#
-#      wymypy.py
-#
-#      Copyright 2007 Marc Lentz <manatlan@gmail.com>
-#
-#      This program is free software; you can redistribute it and/or modify
-#      it under the terms of the GNU General Public License as published by
-#      the Free Software Foundation; either version 2 of the License, or
-#      (at your option) any later version.
-#
-#      This program is distributed in the hope that it will be useful,
-#      but WITHOUT ANY WARRANTY; without even the implied warranty of
-#      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#      GNU General Public License for more details.
-#
-#      You should have received a copy of the GNU General Public License
-#      along with this program; if not, write to the Free Software
-#      Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-#
 import time
 import threading
 import urllib2
+
 from pandora import Pandora as PandoraPython
 from pandora.connection import AuthenticationError
 
-import config
-from plugins import wPlugin
 
 class WorkerThread(threading.Thread):
     def __init__(self, MPD, pandora):
@@ -61,19 +39,19 @@ class WorkerThread(threading.Thread):
                 self.mpd.logger.exception(e)
 
 
-class Pandora(wPlugin):
+class Pandora(object):
     def init(self):
         self.button_index = 51
         
         # setup proxy
-        if config.PANDORA_PROXY:
-           proxy_support = urllib2.ProxyHandler({"http" : config.PANDORA_PROXY})
+        if "proxy" in self.config:
+           proxy_support = urllib2.ProxyHandler({"http" : self.config["proxy"]})
            opener = urllib2.build_opener(proxy_support)
            urllib2.install_opener(opener)
         
         # setup pandora
         self.pandora = PandoraPython()
-        if not self.pandora.authenticate(username=config.PANDORA_USERNAME, password=config.PANDORA_PASSWORD):
+        if not self.pandora.authenticate(username=self.config.get("username", ""), password=self.config.get("password", "")):
             raise ValueError("Wrong pandora credentials or proxy supplied")
         self.stationCache = self.pandora.get_station_list()
         

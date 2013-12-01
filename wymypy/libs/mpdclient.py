@@ -100,13 +100,12 @@ class MpdSystemError(MpdError):
 
 class MpdUnknownHostError(MpdNetError):
   def __init__(self, host):
-    MpdNetError.__init__(self, "host `%(host)s' not found" % host, 11, host)
+    MpdNetError.__init__(self, "host %s not found" % host, 11, host)
 
 
 class MpdConnectionPortError(MpdNetError):
   def __init__(self, host, port):
-    MpdNetError.__init__(self,
-      "problems connecting to `%(host)s' on port %(port)d", 12, host, port)
+    MpdNetError.__init__(self, "problems connecting to `%(host)s' on port %(port)d", 12, host, port)
 
 
 class MpdNotMpdError(MpdNetError):
