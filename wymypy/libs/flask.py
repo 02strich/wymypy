@@ -1,5 +1,6 @@
 from werkzeug.serving import WSGIRequestHandler
 
+
 class WyMyPyRequestHandler(WSGIRequestHandler):
     # make sure we send the minimum amount of packets, as Cisco IP phones
     # will only use the first packet of the response

@@ -2,7 +2,11 @@ from flask import make_response
 from string import Template
 
 
-class CiscoRadio(object):
+class Cisco(object):
+    def __init__(self, mpd, config):
+        self.config = config
+        self.mpd = mpd
+
     def index(self):
         resp = make_response(Template("""<CiscoIPPhoneMenu>
 <Title>WyMyPy</Title>
@@ -36,27 +40,27 @@ class CiscoRadio(object):
         resp.headers['Connection'] = 'close'
         resp.headers['Expires'] = '-1'
         return resp
-    
+
     def playpause(self):
         self.mpd.pause()
         return self.index()
-    
+
     def stop(self):
         self.mpd.stop()
         return self.index()
-    
+
     def next(self):
         self.mpd.next()
         return self.index()
-    
+
     def prev(self):
         self.mpd.prev()
         return self.index()
-    
+
     def volup(self):
         self.mpd.volumeUp()
         return self.index()
-    
+
     def voldown(self):
         self.mpd.volumeDown()
         return self.index()

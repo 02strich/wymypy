@@ -1,9 +1,11 @@
 import os
 
-from wymypy.plugins import wPlugin
 
-class Search(wPlugin):
-    
+class Search(object):
+    def __init__(self, mpd, config):
+        self.config = config
+        self.mpd = mpd
+
     def show(self):
         return """
             <form onsubmit='ajax_search($("tq").value,$("q").value);return false'>
@@ -17,7 +19,7 @@ class Search(wPlugin):
             <button type='submit'>search</button>
             </form>
         """
-    
+
     def ajax_search(self, tq, q):
         q = q.strip()
         yield "<h2>Search for '"
@@ -38,7 +40,7 @@ class Search(wPlugin):
                 #~ yield "<br />"
                 #~ yield go_library(p,p)
                 yield "</li>"
-    
+
     def ajax_add(self, f):
         self.mpd.add([f, ])
         return "player"  # tell to update player

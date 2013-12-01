@@ -2,14 +2,16 @@ import os
 
 
 class Library(object):
-    def __init__(self):
+    def __init__(self, mpd, config):
+        self.config = config
+        self.mpd = mpd
         self.button_index = 1
-    
+
     def show(self):
         return """
             <button onclick='ajax_library("")'>Library</button>
         """
-    
+
     def ajax_library(self, dir):
         go_library = lambda link, aff: """<a href="#" onclick='ajax_library("%s")'>%s</a>""" % (link, aff)
         go_add = lambda f: """<a href='#' onclick='ajax_ladd("%s");'>%s</a>""" % (f, "<span>&gt;</span>")
@@ -30,7 +32,7 @@ class Library(object):
             yield "</h2>"
         else:
             yield "<h2>Library</h2>"
-        
+
         l = self.mpd.ls([dir], onlyDirs=True)
         l.sort(cmp=lambda a, b: cmp(a.lower(), b.lower()))
         c = 0
@@ -40,7 +42,7 @@ class Library(object):
             yield go_library(s, os.path.basename(s))
             yield "</li>"
             c += 1
-        
+
         l = self.mpd.ls([dir], onlyFiles=True)
         l.sort(cmp=lambda a, b: cmp(a.lower(), b.lower()))
         for s in l:
@@ -51,7 +53,7 @@ class Library(object):
             yield os.path.basename(s)
             yield "</li>"
             c += 1
-    
+
     def ajax_ladd(self, f):
         self.mpd.add([f, ])
         return "player"  # tell to update player

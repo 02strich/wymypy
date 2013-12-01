@@ -10,17 +10,21 @@ config = ConfigParser.SafeConfigParser()
 mpd = MpdSafe()
 plugins = []
 
+
 @app.template_filter('ifnotnone')
 def ifnotnone_filter(s):
-    if s == None:
+    if s is None:
         return ""
     else:
         return s
 
+
 @app.route('/')
 def root():
-    return render_template('main.html', stream_url=config.get("mpd", "stream") if config.has_option("mpd", "stream") else None, 
-                                        plugins=sorted(app.plugins.values(), key=lambda plugin: plugin.button_index))
+    return render_template('main.html',
+                           stream_url=config.get("mpd", "stream") if config.has_option("mpd", "stream") else None,
+                           plugins=sorted(app.plugins.values(), key=lambda plugin: plugin.button_index))
+
 
 @app.route('/player')
 def player():
@@ -37,17 +41,17 @@ def plugins_css():
 @app.route('/plugins.js')
 def plugins_js():
     result = ""
-    
+
     def register_ajax(path, method):
         return """function ajax_%(method)s() { sajax_do_call("%(path)s%(method)s", ajax_%(method)s.arguments);}""" % locals()
-    
+
     # plugins ajax
     for plugin in plugins.values():
-        result += '\n'.join([register_ajax("/__ajax/" + plugin.path + "/", i[5:]) for i in dir(plugin) if(str(i).lower().startswith("ajax_") )])
-    
+        result += '\n'.join([register_ajax("/__ajax/" + plugin.path + "/", i[5:]) for i in dir(plugin) if(str(i).lower().startswith("ajax_"))])
+
     # plugins 'normal' js
     result += '\n'.join([i.js for i in plugins.values()])
-    
+
     response = app.make_response(result)
     response.mimetype = 'text/javascript'
     return response
@@ -63,7 +67,7 @@ def ajax_methods(method, plugin=None):
     # process plugin ajax methods
     inst = app.plugins[plugin.lower()]
     arg = [str(a) for a in request.form.values()]
-    
+
     if hasattr(inst, "ajax_" + method):
         result = getattr(inst, "ajax_" + method)(*arg)
 
@@ -80,10 +84,10 @@ def ajax_methods(method, plugin=None):
 def plugin_methods(plugin, method=None):
     inst = plugins[plugin.lower()]
     arg = [str(a) for a in request.form.values()]
-    
+
     if method is None:
         return app.make_response(inst.index(*arg))
-    
+
     if hasattr(inst, method):
         return app.make_response(getattr(inst, method)(*arg))
 

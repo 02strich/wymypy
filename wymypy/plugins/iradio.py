@@ -5,20 +5,23 @@ class Greeting(Document):
     url = StringProperty()
 
 
-class IRadio(object):
-    def __init__(self):
+class Iradio(object):
+    def __init__(self, mpd, config):
+        self.config = config
+        self.mpd = mpd
+
         self.button_index = 50
         self.server = Server(uri=self.config.get("couchdb_url", ""))
         self.db = self.server.get_or_create_db("mpd_radio")
-    
+
     def show(self):
         return """
             <button onclick='ajax_radio()'>Radio</button>
         """
-    
+
     def ajax_radio(self, ignore=0):
         yield "<h2>Internet Radio</h2>"
-        
+
         # list stations
         index = 0
         for i in self.db.all_docs().all():
@@ -29,7 +32,7 @@ class IRadio(object):
             yield cur['url']
             yield "</li>"
             index += 1
-        
+
         # add new station
         yield "<h3>Add Internet Station:"
         yield """
@@ -38,11 +41,11 @@ class IRadio(object):
             <button type='submit'>add</button>
           </form>
         """
-    
+
     def ajax_streamPlay(self, url):
         self.mpd.add([url])
         return "player"
-    
+
     def ajax_streamAdd(self, f):
         self.db.save_doc({'url': f})
         for ele in self.ajax_radio():

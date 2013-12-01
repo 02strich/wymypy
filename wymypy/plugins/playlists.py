@@ -1,14 +1,14 @@
-from wymypy.plugins import wPlugin
-
-class PlayLists(wPlugin):
-    def init(self):
+class Playlists(object):
+    def __init__(self, mpd, config):
+        self.config = config
+        self.mpd = mpd
         self.button_index = 2
-    
+
     def show(self):
         return """
             <button onclick='ajax_listePL()'>Playlists</button>
         """
-    
+
     def ajax_listePL(self):
         yield "<h2>Playlists</h2>"
         l = self.mpd.getPlaylistNames()
@@ -18,7 +18,7 @@ class PlayLists(wPlugin):
             yield """<a href='#' onclick='ajax_playPL("%s");'><span>></span></a>""" % (i.path,)
             yield i.path
             yield "</li>"
-    
+
     def ajax_playPL(self, pl):
         self.mpd.load(pl)
         return "player"  # tell to update player

@@ -15,7 +15,6 @@ def protect(ret=None):
 
 
 class MpdSafe:
-
     def __init__(self, host=None, port=None):
         self.__cnx = None
         self.__host = host
@@ -83,7 +82,7 @@ class MpdSafe:
 
     @protect()
     def play(self, i=None):
-        if i != None:
+        if i is not None:
             self.__cnx.play(i)
         else:
             self.__cnx.play()
@@ -134,7 +133,7 @@ class MpdSafe:
     def volumeDown(self):
         stat = self.__cnx.status()
         self.__cnx.volume(stat.volume - 5)
-        
+
     @protect()
     def mute(self):
         stat = self.__cnx.status()
@@ -160,19 +159,19 @@ class MpdSafe:
 
             atLessOne = False
             if format.find("(artist)") > 0 and artist.strip() != "":
-              atLessOne = True
-            else:
-              if format.find("(title)") > 0 and title.strip() != "":
                 atLessOne = True
-              else:
-                if format.find("(album)") > 0 and album.strip() != "":
-                  atLessOne = True
-                else:
-                  if format.find("(track)") > 0 and track.strip() != "":
-                    atLessOne = True
-            if atLessOne:
-              return format % locals()
             else:
-              return "<font color='red'>" + os.path.basename(s.path) + "</font>"
+                if format.find("(title)") > 0 and title.strip() != "":
+                    atLessOne = True
+                else:
+                    if format.find("(album)") > 0 and album.strip() != "":
+                        atLessOne = True
+                    else:
+                        if format.find("(track)") > 0 and track.strip() != "":
+                            atLessOne = True
+            if atLessOne:
+                return format % locals()
+            else:
+                return "<font color='red'>" + os.path.basename(s.path) + "</font>"
         else:
             return os.path.basename(s.path)

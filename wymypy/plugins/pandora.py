@@ -9,19 +9,19 @@ from pandora.connection import AuthenticationError
 class WorkerThread(threading.Thread):
     def __init__(self, MPD, pandora):
         threading.Thread.__init__(self)
-        self.mpd       = MPD
-        self.pandora   = pandora
+        self.mpd = MPD
+        self.pandora = pandora
         self.shouldDie = False
-        self.retry     = False
-    
+        self.retry = False
+
     def run(self):
         while not self.shouldDie:
             try:
                 idx, tot = self.mpd.getPlaylistPosition()
                 self.mpd.logger.debug("pandora_worker - tot: %d idx: %d", tot, idx)
-                
+
                 if tot - idx < 3:
-                    for i in range(0,2):
+                    for i in range(0, 2):
                         try:
                             song = self.pandora.get_next_song()
                             self.retry = False
@@ -40,53 +40,55 @@ class WorkerThread(threading.Thread):
 
 
 class Pandora(object):
-    def init(self):
+    def __init__(self, mpd, config):
+        self.config = config
+        self.mpd = mpd
         self.button_index = 51
-        
+
         # setup proxy
         if "proxy" in self.config:
-           proxy_support = urllib2.ProxyHandler({"http" : self.config["proxy"]})
-           opener = urllib2.build_opener(proxy_support)
-           urllib2.install_opener(opener)
-        
+            proxy_support = urllib2.ProxyHandler({"http": self.config["proxy"]})
+            opener = urllib2.build_opener(proxy_support)
+            urllib2.install_opener(opener)
+
         # setup pandora
         self.pandora = PandoraPython()
         if not self.pandora.authenticate(username=self.config.get("username", ""), password=self.config.get("password", "")):
             raise ValueError("Wrong pandora credentials or proxy supplied")
         self.stationCache = self.pandora.get_station_list()
-        
+
         self.currentStationId = None
         self.currentStationName = None
         self.playing = False
-    
+
     def show(self):
         return """
             <button onclick='ajax_pandora()'>Pandora</button>
         """
-    
+
     def ajax_pandora(self):
         yield "<h2>Pandora Radio</h2>"
-        
+
         # current station + options
         yield "Current station: " + str(self.currentStationName)
         if self.playing:
             yield """ <button onclick='ajax_pandoraOpe("stop");'>[]</button>"""
         else:
             yield """ <button onclick='ajax_pandoraOpe("play");'>></button>"""
-        
+
         # list stations
         index = 0
         for station in self.stationCache:
             classe = index % 2 == 0 and " class='p'" or ''
             yield "<li%s>" % classe
             yield """<a href='#' onclick='ajax_switchStation("%s", "%s");'><span>></span></a>""" % (station['stationId'], station['stationName'].replace("'", ""))
-            yield station ['stationName']
+            yield station['stationName']
             yield "</li>"
             index += 1
-        
+
         yield "<br/>"
         yield """<a href='#' onclick='ajax_pandoraOpe("reload");'>Reload station list</a>"""
-    
+
     def ajax_switchStation(self, stationdId, stationName):
         self.currentStationId = stationdId
         self.currentStationName = stationName
@@ -96,11 +98,11 @@ class Pandora(object):
         except Exception, e:
             self.pandora.authenticate(username=config.PANDORA_USERNAME, password=config.PANDORA_PASSWORD)
             self.pandora.switch_station(stationdId)
-            
+
             self.mpd.logger.exception(e)
-        
+
         return self.ajax_pandora()
-    
+
     def ajax_pandoraOpe(self, op):
         if op == "play" and self.currentStationId:
             self.worker = WorkerThread(self.mpd, self.pandora)
@@ -113,6 +115,5 @@ class Pandora(object):
             self.playing = False
         elif op == "reload":
             self.stationCache = self.pandora.get_station_list()
-            
+
         return self.ajax_pandora()
-    
