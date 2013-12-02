@@ -73,7 +73,7 @@ form {
   display:inline;
 }
 
-div#zonePlayer {
+div#zone_player {
   padding:2px;
   position:absolute;
   left:50%;
@@ -83,12 +83,7 @@ div#zonePlayer {
   height:70px;
 }
 
-div#zoneListen {
-  border:2px solid blue;
-  visibility:hidden;
-}
-
-div#zonePlayList {
+div#zone_playList {
   overflow:auto;
   border:2px solid #222;
   position:absolute;
@@ -100,7 +95,7 @@ div#zonePlayList {
   padding:2px
 }
 
-div#zoneView {
+div#zone_plugins {
   overflow:auto;
   border:1px solid black;
   position:absolute;
@@ -111,7 +106,7 @@ div#zoneView {
   background:#000;
 }
 
-div#zoneOpt {
+div#zone_options {
   position:absolute;
   bottom:0px;
   left:50%;
@@ -119,7 +114,7 @@ div#zoneOpt {
   padding:2px;
 }
 
-div#zonePlugins {
+div#zone_menu {
   position:absolute;
   left:0;
   right:0px;

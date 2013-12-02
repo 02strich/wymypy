@@ -45,8 +45,17 @@ class MpdSafe:
         return stat
 
     @protect(None)
-    def getCurrentSong(self):
-        return self.__cnx.getCurrentSong()
+    def getCurrentSong(self, tag_format=None):
+        song = self.__cnx.getCurrentSong()
+
+        if song:
+            if song.path.lower().startswith("http://"):
+                song.is_stream = True
+            else:
+                song.is_stream = False
+                song.formatted_title = self.display(song, tag_format)
+
+        return song
 
     @protect((0, 0, 1))
     def getSongPosition(self):
@@ -57,8 +66,15 @@ class MpdSafe:
         return self.__cnx.getPlaylistPosition()
 
     @protect([])
-    def playlist(self):
-        return self.__cnx.playlist()
+    def playlist(self, tag_format=None):
+        playlist = self.__cnx.playlist()
+
+        for entry in playlist:
+            if entry.path.lower().startswith("http://"):
+                entry.formatted_title = entry.path
+            else:
+                entry.formatted_title = self.display(entry, tag_format)
+        return playlist
 
     @protect([])
     def getPlaylistNames(self):

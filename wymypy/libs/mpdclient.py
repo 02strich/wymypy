@@ -257,11 +257,11 @@ def playerStateSwapType(state):
 
 def searchTableSwapType(state):
     """
-    The various seach tables are identified by integers, but have standard
+    The various search tables are identified by integers, but have standard
     string descriptions as well.  This function will swap an integer to its
     corresponding string description, and vice versa.
     """
-    if isinstance(state, int) or isinstance(state, str):
+    if isinstance(state, int) or isinstance(state, (str, unicode)):
         return _searchTables[state]
     else:
         raise ValueError("state must be int or str")
@@ -942,15 +942,17 @@ class MpdController(MpdConnection):
         """
 
         for name in filenames:
-                if not isinstance(name, str):
-                        raise ValueError("all names must be strings")
+            if not isinstance(name, (str, unicode)):
+                raise ValueError("all names must be strings")
+
+        filenames = [entry.encode('latin-1') if isinstance(entry, unicode) else entry for entry in filenames]
 
         tmp = []
         # filter streams
         for name in filenames:
-                if name.startswith("http://"):
-                        tmp.append(name)
-                        filenames.remove(name)
+            if name.startswith("http://"):
+                tmp.append(name)
+                filenames.remove(name)
 
         # ---> needs to much performance
         # get files in music dir
@@ -1150,7 +1152,7 @@ class MpdController(MpdConnection):
                                                                                      of acdc or mozart
         """
 
-        if not isinstance(table, str) or table not in _searchTables:
+        if not isinstance(table, (str, unicode)) or table not in _searchTables:
             raise ValueError("table must be album|artist|title|filename")
 
         if not words:
@@ -1161,12 +1163,11 @@ class MpdController(MpdConnection):
         found = []
 
         for word in words:
-
-            if not isinstance(word, str):
+            if not isinstance(word, (str, unicode)):
                 raise ValueError("all words must be strings")
 
             try:
-                self.sendSearchCommand(table, word)
+                self.sendSearchCommand(table, word if isinstance(word, str) else word.encode('latin-1'))
 
                 found.extend(self._getAllAttrsOfType("path", Directory, Song))
 
@@ -1197,8 +1198,11 @@ class MpdController(MpdConnection):
 
         for adir in dirs:
 
-            if not isinstance(adir, str):
+            if not isinstance(adir, (str, unicode)):
                 raise ValueError("all arguments must be strings")
+
+            if isinstance(adir, unicode):
+                adir = adir.encode('latin-1')
 
             try:
                 self.sendLsInfoCommand(adir)
@@ -1213,7 +1217,7 @@ class MpdController(MpdConnection):
             finally:
                 self.finishCommand()
 
-        return listing
+        return [entry.decode('utf-8') for entry in listing]
 
     def _getAllAttrsOfType(self, attr, *types):
         """
@@ -1311,7 +1315,6 @@ class MpdController(MpdConnection):
             self.sendPlaylistInfoCommand(status.song)
 
             song = self.getNextInfoEntity()
-
         finally:
             self.finishCommand()
 

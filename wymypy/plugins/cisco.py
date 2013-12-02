@@ -3,6 +3,10 @@ from string import Template
 
 
 class Cisco(object):
+    has_panel = False
+    button_index = 100
+    button_label = ""
+
     def __init__(self, mpd, config):
         self.config = config
         self.mpd = mpd

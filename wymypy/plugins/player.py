@@ -1,148 +1,142 @@
+from flask import render_template_string
+
 class Player(object):
+    has_panel = False
+    button_index = 100
+    button_label = ""
+    index_template = """
+{% if stat %}
+    {% if stat.state in (2, 3) %}
+        {% if current_song.is_stream %}
+            [Stream]
+            {{ current_song.title }}
+        {% else %}
+            {{ current_song.formatted_title|safe }}
+        {% endif %}
+        <br />
+
+        <table>
+            <tr>
+                <td>
+                    <a id='sb' onclick='seekclick(event);'><div id='sbc' style='width:{{percent_time*2}}px'></div></a>
+                </td>
+                <td>
+                    {{percent_time|int}}% - {{"%02d:%02d"|format(elapsed_time/60, elapsed_time%60)}}/{{"%02d:%02d"|format(total_time/60, total_time%60)}}
+                </td>
+            </tr>
+        </table>
+    {% endif %}
+{% else %}
+Error : Can't play that!
+{% endif %}
+
+<button onclick='execute_plugin("player", "prev", {}, refresh_player);'><<</button>
+{% if stat.state != 2 %}
+    <button onclick='execute_plugin("player", "play", {}, refresh_player);'>></button>
+{% else %}
+    <button onclick='execute_plugin("player", "pause", {}, refresh_player);'>||</button>
+{% endif %}
+{% if stat.state != 1 %}
+    <button onclick='execute_plugin("player", "stop", {}, refresh_player);'>[]</button>
+{% endif %}
+
+<button onclick='execute_plugin("player", "next", {}, refresh_player);'>>></button>
+
+{% if stat.state != 0 and stat.volume != -1 %}
+    <button onclick='execute_plugin("player", "volume_down", {}, refresh_player);'>-</button>
+    <button onclick='execute_plugin("player", "volume_up", {}, refresh_player);'>+</button>
+    <button onclick='execute_plugin("player", "mute", {}, refresh_player);'>@</button>
+    {{ stat.volume }}%
+{% endif %}
+"""
+    playlist_template = """
+<h2>Playlist ({{ total_index }})
+    <button onclick='execute_plugin("player", "clear", {}, refresh_player);'>clear</button>
+    <button onclick='execute_plugin("player", "clear_old", {}, refresh_player);'>clear old</button>
+    <button onclick='execute_plugin("player", "shuffle", {}, refresh_player);'>shuffle</button>
+</h2>
+
+{% for index, entry in enumerate(playlist) %}
+    <li 
+    {% if current_index == index+1 %}
+        class='s'
+    {% else %}
+        {{ loop.cycle("", "class='p'") }}
+    {% endif %}
+    > {{ "%03d"|format(index) }}
+        <a href='#' onclick='execute_plugin("player", "delete", {idx: {{index}} }, refresh_player);'><span>X</span></a>
+        <a href='#' onclick='execute_plugin("player", "play", {idx: {{index}} }, refresh_player);'>{{ entry.formatted_title }}</a>
+    </li>
+{% endfor %}
+
+"""
+
     def __init__(self, mpd, config):
         self.config = config
         self.mpd = mpd
 
-    def ajax_player(self, isForced=0):
-        yield "[[zonePlayer]]"
-
+    def index(self):
         stat = self.mpd.status()
-        #~ for i in  ['elapsedTime', 'playlist', 'playlistLength', 'random', 'repeat', 'song', 'state', 'stateStr', 'totalTime', 'volume']:
-          #~ print i, getattr(stat,i)
-
-        if not stat:
-            #self.mpd.stop()
-            yield "Error : Can't play that!"
-
-            class stat:
-                state = 0
+        if stat.state in (2,3):
+            elapsed_time, total_time, percent_time = self.mpd.getSongPosition()
         else:
-            if stat.state in (2, 3):  # in play/pause
-                # aff title
-                s = self.mpd.getCurrentSong()
-                if s.path.lower().startswith("http://"):
-                    # radio
-                    yield "[Stream] "
-                    yield s.title and s.title or "playing ..."
-                else:
-                    # file
-                    yield self.mpd.display(s, config.TAG_FORMAT)
-                yield "<br />"
+            elapsed_time, total_time, percent_time = 0, 0, 0
 
-                # aff position
-                ds = lambda t: "%02d:%02d" % (t / 60, t % 60)
-                s, t, p = self.mpd.getSongPosition()
-                yield """
-                  <table>
-                    <tr>
-                      <td>
-                        <a id='sb' onclick='seekclick(event);'>
-                            <div id='sbc' style='width:%dpx'></div>
-                        </a>
-                      </td>
-                      <td>
-                        %d %% - %s/%s
-                      </td>
-                    </tr>
-                  </table>""" % (int(p * 2), int(p), ds(s), ds(t))
+        return render_template_string(self.index_template, stat=stat, current_song=self.mpd.getCurrentSong(self.config['tag_format']), elapsed_time=elapsed_time, total_time=total_time, percent_time=percent_time)
 
-        yield """
-        <button onclick='ajax_ope("prev");'><<</button>
-        """
-        if stat.state != 2:
-            yield """ <button onclick='ajax_ope("play");'>></button>"""
+    def playlist(self):
+        current_index, total_index = self.mpd.getPlaylistPosition()
+        return render_template_string(self.playlist_template, current_index=current_index, total_index=total_index, playlist=self.mpd.playlist(self.config['tag_format']), enumerate=enumerate)
+
+    def ajax_play(self, idx=None):
+        if idx:
+            self.mpd.play(int(idx))
         else:
-            yield """ <button onclick='ajax_ope("pause");'>||</button>"""
-        if stat.state != 1:
-            yield """ <button onclick='ajax_ope("stop");'>[]</button>"""
-        yield """
-        <button onclick='ajax_ope("next");'>>></button>
-        """
-
-        if stat.state != 0 and stat.volume != -1:
-            yield """
-            <button onclick='ajax_ope("voldown");'>-</button>
-            <button onclick='ajax_ope("volup");'>+</button>
-            <button onclick='ajax_ope("mute");'>@</button>
-            """
-            yield str(stat.volume)
-            yield "%"
-
-        if hasattr(config, "MPD_STREAM") and config.MPD_STREAM:
-            yield """&nbsp;&nbsp;<button onclick='audio_playstop();'>> []</button> """
-
-        if isForced or self.mpd.needRedrawPlaylist():
-            idx, tot = self.mpd.getPlaylistPosition()
-            yield "[[zonePlayList]]"
-            yield """
-            <h2>Playlist (%d)
-            <button onclick='ajax_ope("clear");'>clear</button>
-            <button onclick='ajax_ope("clear_old");'>clear old</button>
-            <button onclick='ajax_ope("shuffle");'>shuffle</button>
-            </h2>
-            """ % tot
-
-            l = self.mpd.playlist()
-            for s in l:
-                i = l.index(s)
-
-                if i + 1 == idx:
-                    classe = " class='s'"
-                else:
-                    classe = i % 2 == 0 and " class='p'" or ''
-
-                if s.path.lower().startswith("http://"):
-                    title = s.path
-                else:
-                    title = self.mpd.display(s, config.TAG_FORMAT)
-
-                yield "<li%s>" % classe
-                yield "%03d" % (i + 1)
-                yield """<a href='#' onclick="ajax_ope('delete','""" + str(i) + """');"><span>X</span></a>"""
-                yield """<a href='#' onclick="ajax_ope('play','""" + str(i) + """');">""" + title + """</a>"""
-                yield "</li>"
-
-    def ajax_ope(self, op, idx=None):
-        if op == "play":
-            if idx:
-                self.mpd.play(int(idx))
-            else:
-                self.mpd.play()
-        elif op == "delete":
-            self.mpd.delete([int(idx), ])
-        elif op == "next":
-            self.mpd.next()
-        elif op == "prev":
-            self.mpd.prev()
-        elif op == "play":
             self.mpd.play()
-        elif op == "pause":
-            self.mpd.pause()
-        elif op == "playpause":
-            stat = self.mpd.status()
-            if stat.state != 2:
-                self.mpd.play()
-            else:
-                self.mpd.pause()
-        elif op == "stop":
-            self.mpd.stop()
-        elif op == "clear":
-            self.mpd.clear()
-        elif op == "clear_old":
-            idx, tot = self.mpd.getPlaylistPosition()
-            self.mpd.delete([[0, max(0, idx-2)]])
-        elif op == "shuffle":
-            self.mpd.shuffleIt()
-        elif op == "seek":
-            self.mpd.seek(percent=int(idx))
-        elif op == "volup":
-            self.mpd.volumeUp()
-        elif op == "voldown":
-            self.mpd.volumeDown()
-        elif op == "mute":
-            self.mpd.mute()
-        elif op == "changeDisplay":
-            self.mpd.changeDisplay(int(idx))
+
+    def ajax_delete(self, idx=None):
+        self.mpd.delete([int(idx), ])
+    
+    def ajax_next(self):
+        self.mpd.next()
+
+    def ajax_prev(self):
+        self.mpd.prev()
+
+    def ajax_pause(self):
+        self.mpd.pause()
+
+    def ajax_playpause(self):
+        stat = self.mpd.status()
+        if stat.state != 2:
+            self.mpd.play()
         else:
-            raise "ERROR:" + op + "," + str(idx)
-        return self.ajax_player()
+            self.mpd.pause()
+
+    def ajax_stop(self):
+        self.mpd.stop()
+
+    def ajax_clear(self):
+        self.mpd.clear()
+
+    def ajax_clear_old(self):
+        idx, tot = self.mpd.getPlaylistPosition()
+        self.mpd.delete([[0, max(0, idx-2)]])
+
+    def ajax_shuffle(self):
+        self.mpd.shuffleIt()
+
+    def ajax_seek(self, percent=None):
+        self.mpd.seek(percent=int(percent))
+
+    def ajax_volume_up(self):
+        self.mpd.volumeUp()
+
+    def ajax_volume_down(self):
+        self.mpd.volumeDown()
+    
+    def ajax_mute(self):
+        self.mpd.mute()
+
+    def ajax_change_display(self, idx=None):
+        self.mpd.changeDisplay(int(idx))

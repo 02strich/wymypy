@@ -1,59 +1,39 @@
 import os
 
+from flask import render_template_string
 
 class Library(object):
+    has_panel = True
+    button_index = 1
+    button_label = "Library"
+
+    index_template = """
+<h2>
+    {% for path_element in path %}
+        <a href="#" onclick='load_plugin_content("library", "index", {path: "{{ "/".join(path[:loop.index]) }}"})'>{{ path_element }}</a>
+        {% if not loop.last %}/{% else %}
+            <a href="#" onclick='execute_plugin("library", "add", {file_name: "{{ path|join("/") }}"}, refresh_player);'><span>></span></a>
+        {% endif %}
+    {% else %}
+        Library
+    {% endfor %}
+</h2>
+
+{% for dir in dirs %}
+    <li {{ loop.cycle("", "class='p'") }}><a href="#" onclick="load_plugin_content('library', 'index', {path: '{{ dir }}'});">{{ basename(dir) }}</a></li> 
+{% endfor %}
+
+{% for file in files %}
+    <li {{ loop.cycle("", "class='p'") }}><a href="#" onclick='execute_plugin("library", "add", {file_name: "{{ file }}"}, refresh_player);'>{{ basename(file) }}</a></li> 
+{% endfor %}
+"""
+
     def __init__(self, mpd, config):
         self.config = config
         self.mpd = mpd
-        self.button_index = 1
 
-    def show(self):
-        return """
-            <button onclick='ajax_library("")'>Library</button>
-        """
+    def index(self, path=""):
+        return render_template_string(self.index_template, basename=os.path.basename, path=path.split("/") if path else [], dirs=self.mpd.ls([path], onlyDirs=True), files=self.mpd.ls([path], onlyFiles=True))
 
-    def ajax_library(self, dir):
-        go_library = lambda link, aff: """<a href="#" onclick='ajax_library("%s")'>%s</a>""" % (link, aff)
-        go_add = lambda f: """<a href='#' onclick='ajax_ladd("%s");'>%s</a>""" % (f, "<span>&gt;</span>")
-        if dir != "":
-            yield "<h2>"
-            path = ""
-            yield go_library("", "Library")
-            for i in dir.split("/"):
-                yield " / "
-                if path != "":
-                    path += "/"
-                path += i
-                if path != dir:
-                    yield go_library(path, i)
-                else:
-                    yield i
-            yield go_add(dir)
-            yield "</h2>"
-        else:
-            yield "<h2>Library</h2>"
-
-        l = self.mpd.ls([dir], onlyDirs=True)
-        l.sort(cmp=lambda a, b: cmp(a.lower(), b.lower()))
-        c = 0
-        for s in l:
-            classe = (c % 2 == 0) and " class='p'" or ''
-            yield "<li%s>" % classe
-            yield go_library(s, os.path.basename(s))
-            yield "</li>"
-            c += 1
-
-        l = self.mpd.ls([dir], onlyFiles=True)
-        l.sort(cmp=lambda a, b: cmp(a.lower(), b.lower()))
-        for s in l:
-            classe = (c % 2 == 0) and " class='p'" or ''
-            yield "<li%s>" % classe
-            yield go_add(s)
-            yield self.go_listen(s)
-            yield os.path.basename(s)
-            yield "</li>"
-            c += 1
-
-    def ajax_ladd(self, f):
-        self.mpd.add([f, ])
-        return "player"  # tell to update player
+    def ajax_add(self, file_name):
+        self.mpd.add([file_name, ])

@@ -59,6 +59,7 @@ def get_instances(mpd, bannend_plugins=[], plugin_configs={}):
         logger.info(" - load plugin: %s" % plugin_module_name.capitalize())
         try:
             instances[plugin_module_name] = plugin_class(mpd, plugin_configs.get(plugin_module_name, {}))
+            instances[plugin_module_name].name = plugin_module_name
         except Exception, m:
             logger.exception("Plugin instantiation error for %s: %s" % (plugin_module_name, m))
     return instances
