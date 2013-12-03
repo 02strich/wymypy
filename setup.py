@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 
 setup(name='wymypy-ng',
-    version = '2.0',
+    version = '2.1',
     description = 'Simple web interface for controlling MPD',
     maintainer = 'Stefan Richter',
     maintainer_email = 'stefan@02strich.de',
