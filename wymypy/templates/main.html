@@ -42,15 +42,22 @@
         </div>
         
         <div id="zone_options">
-            <b style='float:right'><a href='http://github.com/02strich/wymypy'>wymypy</a></b>
-            <select id='timer' onchange="refresh_player_loop();">
-                <option value='1000'>refresh 1s</option>
-                <option value='2000'>refresh 2s</option>
-                <option value='5000' selected>refresh 5s</option>
-                <option value='10000'>refresh 10s</option>
-                <option value=''>refresh none</option>
-            </select>
-            <input type="checkbox" id='dispTags' onchange='changeDisplay(this);' />
+            <b style='float:right; margin-top:8px;'><a href='http://github.com/02strich/wymypy'>wymypy</a></b>
+            <div style="display:inline;">
+                <select id='timer' onchange="refresh_player_loop();">
+                    <option value='1000'>refresh 1s</option>
+                    <option value='2000'>refresh 2s</option>
+                    <option value='5000' selected>refresh 5s</option>
+                    <option value='10000'>refresh 10s</option>
+                    <option value=''>refresh none</option>
+                </select>
+                <input type="checkbox" id='dispTags' onchange='changeDisplay(this);' />
+            </div>
+
+            {% if player_stream %}
+                <div id="stream_player" data-stream-src="{{ player_stream }}"></div>
+            {% endif %}
+
         </div>
         
         <div id="zone_player">{{ player|safe }}</div>

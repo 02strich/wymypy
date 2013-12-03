@@ -73,6 +73,9 @@ def main(config_file="/etc/wymypy/wymypy.ini"):
         if not section.startswith("plugin-"): continue
         plugin_configs[section[7:]] = dict([(option, wymypy.app.config.get(section, option)) for option in wymypy.app.config.options(section)])
 
+    # mpd->stream is special as it implies plugins-player->has_stream
+    plugin_configs['player']['has_stream'] = bool(wymypy.app.config.get('mpd', 'stream'))
+
     # configure logging
     if wymypy.app.config.has_option("general", "logging"):
         logging.basicConfig(filename=wymypy.app.config.get("general", "logging"), format="%(asctime)s %(levelname)s %(message)s", level=logging.DEBUG)

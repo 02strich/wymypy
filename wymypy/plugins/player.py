@@ -42,6 +42,10 @@ Error : Can't play that!
 
 <button onclick='execute_plugin("player", "next", {}, refresh_player);'>>></button>
 
+{% if has_stream %}
+<button onclick='audio_playstop();'>[>]</button>
+{% endif %}
+
 {% if stat.state != 0 and stat.volume != -1 %}
     <button onclick='execute_plugin("player", "volume_down", {}, refresh_player);'>-</button>
     <button onclick='execute_plugin("player", "volume_up", {}, refresh_player);'>+</button>
@@ -82,7 +86,7 @@ Error : Can't play that!
         else:
             elapsed_time, total_time, percent_time = 0, 0, 0
 
-        return render_template_string(self.index_template, stat=stat, current_song=self.mpd.getCurrentSong(self.config['tag_format']), elapsed_time=elapsed_time, total_time=total_time, percent_time=percent_time)
+        return render_template_string(self.index_template, stat=stat, current_song=self.mpd.getCurrentSong(self.config['tag_format']), elapsed_time=elapsed_time, total_time=total_time, percent_time=percent_time, has_stream=self.config['has_stream'])
 
     def playlist(self):
         current_index, total_index = self.mpd.getPlaylistPosition()

@@ -22,9 +22,9 @@ def ifnotnone_filter(s):
 @app.route('/')
 def root():
     return render_template('main.html',
-                           stream_url=config.get("mpd", "stream") if config.has_option("mpd", "stream") else None,
                            player=plugins['player'].index(),
                            player_playlist=plugins['player'].playlist(),
+                           player_stream=config.get("mpd", "stream") if config.has_option("mpd", "stream") else None,
                            plugins=sorted(plugins.values(), key=lambda plugin: plugin.button_index))
 
 

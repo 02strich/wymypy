@@ -88,7 +88,7 @@ div#zone_playList {
   border:2px solid #222;
   position:absolute;
   top:100px;
-  bottom:25px;
+  bottom:40px;
   left:50%;
   right:0px;
   background:#000;
@@ -112,6 +112,10 @@ div#zone_options {
   left:50%;
   right:0px;
   padding:2px;
+}
+
+div#zone_options div#stream_player {
+  display: inline;
 }
 
 div#zone_menu {

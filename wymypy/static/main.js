@@ -22,13 +22,11 @@ function seekclick(e) {
 }
 
 function audio_playstop() {
-	var song = document.getElementsByTagName('audio')[0];
-	if(song) {
-		song.pause();
-		song.parentNode.removeChild(song);
+	if($("#stream_player_audio").length) {
+		//$("#stream_player_audio").pause();
+		$("#stream_player_audio").remove();
 	} else {
-		var container = document.getElementById("stream_audio_container");
-		container.innerHTML = "<audio src='" + container.dataset.src  + "' autoplay></audio>"
+		$("#stream_player").append("<audio id='stream_player_audio' src='" + $("#stream_player").data('stream-src') + "?" + new Date().getTime() + "' autoplay controls></audio>");
 	}
 
 	return false;
