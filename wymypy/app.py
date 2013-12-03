@@ -1,7 +1,8 @@
 import ConfigParser
+from functools import wraps
 import json
 
-from flask import Flask, render_template, request, abort
+from flask import Flask, render_template, request, abort, Response
 
 from wymypy.libs.mpdsafe import MpdSafe
 
@@ -10,16 +11,19 @@ config = ConfigParser.SafeConfigParser()
 mpd = MpdSafe()
 plugins = []
 
-
-@app.template_filter('ifnotnone')
-def ifnotnone_filter(s):
-    if s is None:
-        return ""
-    else:
-        return s
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if config.has_option("auth", "enabled") and config.getboolean("auth", "enabled"):
+            auth = request.authorization
+            if not auth or not (auth.username == config.get("auth", "username") and auth.password == config.get("auth", "password")):
+                return Response('Could not verify your access level for that URL.\nYou have to login with proper credentials', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
+        return f(*args, **kwargs)
+    return decorated
 
 
 @app.route('/')
+@requires_auth
 def root():
     return render_template('main.html',
                            player=plugins['player'].index(),
@@ -29,12 +33,14 @@ def root():
 
 
 @app.route('/player')
+@requires_auth
 def player():
     return render_template('player.html')
 
 
 @app.route('/plugin/<plugin>', methods=["GET", "POST"])
 @app.route('/plugin/<plugin>/<method>', methods=["GET", "POST"])
+@requires_auth
 def plugin_methods(plugin, method=None):
     inst = plugins[plugin.lower()]
     args = request.form.to_dict()
@@ -50,6 +56,7 @@ def plugin_methods(plugin, method=None):
 
 @app.route('/__ajax/<method>', methods=["GET", "POST"])
 @app.route('/__ajax/<plugin>/<method>', methods=["GET", "POST"])
+@requires_auth
 def ajax_methods(method, plugin=None):
     # right now the core has no ajax methods
     if plugin is None:
