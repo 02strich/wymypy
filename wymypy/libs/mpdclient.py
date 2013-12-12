@@ -205,10 +205,12 @@ class InfoEntity(object):
         The instance's path attribute will be given the value of the path parameter
         passed to this constructor.
         """
-        if not isinstance(path, str):
+        if isinstance(path, str):
+            self.path = path.decode("latin-1")
+        elif isinstance(path, unicode):
+            self.path = path
+        else:
             raise ValueError("path must be string")
-
-        self.path = path
 
 
 class Directory(InfoEntity):
@@ -246,13 +248,16 @@ def playerStateSwapType(state):
     descriptions as well.  This function will swap an integer to its
     corresponding string description, and vice versa.
     """
-    if isinstance(state, int) or isinstance(state, str):
+    if isinstance(state, str):
+        state = state.decode("latin-1")
+
+    if isinstance(state, (int, unicode)):
         if state in _playerStates:
             return _playerStates[state]
         else:
             raise ValueError("state `%s' does not exist" % state)
     else:
-        raise ValueError("state must be int or str")
+        raise ValueError("state must be int or str/unicode")
 
 
 def searchTableSwapType(state):
@@ -261,35 +266,39 @@ def searchTableSwapType(state):
     string descriptions as well.  This function will swap an integer to its
     corresponding string description, and vice versa.
     """
-    if isinstance(state, int) or isinstance(state, (str, unicode)):
+
+    if isinstance(state, str):
+        state = state.decode("latin-1")
+
+    if isinstance(state, (int, unicode)):
         return _searchTables[state]
     else:
-        raise ValueError("state must be int or str")
+        raise ValueError("state must be int or str/unicode")
 
 ##### some convenient mappings, formerly C #defines
 
 # states that the player may be in
 _playerStates = {
-    "unknown":  0,
-    "stop":     1,
-    "play":     2,
-    "pause":    3,
-    0: "unknown",
-    1: "stop",
-    2: "play",
-    3: "pause"
+    u"unknown":  0,
+    u"stop":     1,
+    u"play":     2,
+    u"pause":    3,
+    0: u"unknown",
+    1: u"stop",
+    2: u"play",
+    3: u"pause"
 }
 
 _searchTables = {
     # types of things you can search for
-    "artist":   0,
-    "album":    1,
-    "title":    2,
-    "filename": 3,
-    0: "artist",
-    1: "album",
-    2: "title",
-    3: "filename"
+    u"artist":   0,
+    u"album":    1,
+    u"title":    2,
+    u"filename": 3,
+    0: u"artist",
+    1: u"album",
+    2: u"title",
+    3: u"filename"
 }
 
 
@@ -488,9 +497,9 @@ class MpdConnection(object):
 
     def sendPlaylistInfoCommand(self, songNum=-1):
         if songNum == -1:
-                self.executeCommand('playlistinfo')
+            self.executeCommand('playlistinfo')
         else:
-                self.executeCommand('playlistinfo "%d"' % songNum)
+            self.executeCommand('playlistinfo "%d"' % songNum)
 
     def getNextAlbum(self):
         self.getNextReturnElementNamed("Album")
@@ -537,22 +546,17 @@ class MpdConnection(object):
 
         if self.returnElement.name == "file":
             entity = Song(self.returnElement.value)
-
         elif self.returnElement.name == "directory":
             entity = Directory(self.returnElement.value)
-
         elif self.returnElement.name == "playlist":
             entity = PlaylistFile(self.returnElement.value)
-
         else:
             raise MpdError("problem parsing song info")
 
         self.getNextReturnElement()
 
         while self.returnElement:
-
             # get all of a Song's attributes
-
             name, value = self.returnElement.name, self.returnElement.value
 
             if name in ("file", "directory", "playlist"):
