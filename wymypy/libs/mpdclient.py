@@ -206,7 +206,7 @@ class InfoEntity(object):
         passed to this constructor.
         """
         if isinstance(path, str):
-            self.path = path.decode("latin-1")
+            self.path = path.decode("utf-8")
         elif isinstance(path, unicode):
             self.path = path
         else:
@@ -249,7 +249,7 @@ def playerStateSwapType(state):
     corresponding string description, and vice versa.
     """
     if isinstance(state, str):
-        state = state.decode("latin-1")
+        state = state.decode("utf-8")
 
     if isinstance(state, (int, unicode)):
         if state in _playerStates:
@@ -268,7 +268,7 @@ def searchTableSwapType(state):
     """
 
     if isinstance(state, str):
-        state = state.decode("latin-1")
+        state = state.decode("utf-8")
 
     if isinstance(state, (int, unicode)):
         return _searchTables[state]
@@ -949,7 +949,7 @@ class MpdController(MpdConnection):
             if not isinstance(name, (str, unicode)):
                 raise ValueError("all names must be strings")
 
-        filenames = [entry.encode('latin-1') if isinstance(entry, unicode) else entry for entry in filenames]
+        filenames = [entry.encode('utf-8') if isinstance(entry, unicode) else entry for entry in filenames]
 
         tmp = []
         # filter streams
@@ -1171,7 +1171,7 @@ class MpdController(MpdConnection):
                 raise ValueError("all words must be strings")
 
             try:
-                self.sendSearchCommand(table, word if isinstance(word, str) else word.encode('latin-1'))
+                self.sendSearchCommand(table, word if isinstance(word, str) else word.encode('utf-8'))
 
                 found.extend(self._getAllAttrsOfType("path", Directory, Song))
 
@@ -1206,7 +1206,7 @@ class MpdController(MpdConnection):
                 raise ValueError("all arguments must be strings")
 
             if isinstance(adir, unicode):
-                adir = adir.encode('latin-1')
+                adir = adir.encode('utf-8')
 
             try:
                 self.sendLsInfoCommand(adir)
@@ -1221,7 +1221,7 @@ class MpdController(MpdConnection):
             finally:
                 self.finishCommand()
 
-        return [entry.decode('utf-8') for entry in listing]
+        return listing
 
     def _getAllAttrsOfType(self, attr, *types):
         """
